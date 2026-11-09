@@ -1,0 +1,208 @@
+{
+  "sourceGitHead": "5198dec792b1988fc67ed1fb9263607b85feddbf",
+  "includesUncommittedChanges": true,
+  "baseVersion": "0.4.1",
+  "source": "local Magpie-Rhino working copy",
+  "files": [
+    {
+      "sha256": "ccda803bc090570d27955fe3beba26dea96271195e485013f8cd559d49f4cf7f",
+      "path": ".gitattributes"
+    },
+    {
+      "sha256": "65cfa68050c359131fa8345b10a789ab7f6aa4c5f9698763bfa4e49c2c711552",
+      "path": "packaging/ifc-runtime/LIBRARY-REPLACEMENT.md"
+    },
+    {
+      "sha256": "6377bba8cedb19afcec5f35088f650003aa8c358c70a5973df14cc69e8a10fdf",
+      "path": "packaging/ifc-runtime/README.md"
+    },
+    {
+      "sha256": "087fa3848950b7e5fca550480548e0244084ac9d4a9c6ca1f2a0b7e0ca1d885e",
+      "path": "packaging/ifc-runtime/provenance.json"
+    },
+    {
+      "sha256": "96325d2bd305dd0dc2e578e869790e189a1a07cfdace1ff73ff22b1983a3dbf7",
+      "path": "packaging/ifc-runtime/source-artifacts.json"
+    },
+    {
+      "sha256": "e7ac9f18a0fc5c545e28607c5dac43d4b1cc77fc714fc8dc9cc30c3263b0a5ac",
+      "path": "runtime/requirements-win-x64.txt"
+    },
+    {
+      "sha256": "ba7da3f699efa351c39c2041b04ab15710138b31afbec54d421def97d586bb21",
+      "path": "src/RhinoMagpie.Agent/ILocalModelingTools.cs"
+    },
+    {
+      "sha256": "a9a5cdd7111835df4362239cae7a1dbb1973012b3ae92ce6ee1b78c2e4426251",
+      "path": "src/RhinoMagpie.Agent/IfcRuntimeBundle.cs"
+    },
+    {
+      "sha256": "8e07da3419eb2bcbf3dae48955850b19b5fff001f81bc60674f380ab11c10e4c",
+      "path": "src/RhinoMagpie.Agent/IfcRuntimeDiagnostics.cs"
+    },
+    {
+      "sha256": "66d3d2095c9548ffd56a23f1994571478a62e919b9f55e3f4116346ece490170",
+      "path": "src/RhinoMagpie.Plugin/OpenBimTools.cs"
+    },
+    {
+      "sha256": "d407c8c9a8979d907bf968243c24090d5e4534dbc776d5b685ef4c5eaf3ee610",
+      "path": "tests/Agent.Tests/IfcDiagnosticTests.cs"
+    },
+    {
+      "sha256": "71802f91ea3b7d296a5407f4223c9bb9c342bda1368b843c389c4ad5ad6aa436",
+      "path": "tests/Agent.Tests/IfcRuntimeTests.cs"
+    },
+    {
+      "sha256": "35ded32a7456f0ea4b0e21852d4c7752e5772bca42159b33568e9615a5df1689",
+      "path": "tests/Workflow.Tests/LocalToolTests.cs"
+    },
+    {
+      "sha256": "a32dbf9d40a1353e270656eef3cdb986d5b055d16419a27a4260b1b4e9693087",
+      "path": "vendor/openbim/LICENSE"
+    },
+    {
+      "sha256": "5baaeb52c34f07efe9998b0ec3ce1ff3d9819d4a480a82199853c0dbe689aad8",
+      "path": "vendor/openbim/examples/two-storey.json"
+    },
+    {
+      "sha256": "40baac01b8867d1c1d08f9808e9d6221a7651fde27301418b64a1ddc02a4ee40",
+      "path": "vendor/openbim/python/miki_ifc.py"
+    },
+    {
+      "sha256": "0efc42c2bdeb4feba44e245e47f8a01254b6a712f7065908b65a7f16975ad3db",
+      "path": "vendor/openbim/python/requirements.txt"
+    },
+    {
+      "sha256": "47de4b26f0993cddf3965356ac8512ad15a353dcdf9da310213f9fd7c892b455",
+      "path": "vendor/openbim/snapshot.json"
+    },
+    {
+      "sha256": "610415fe009ee70292b4a57fc2a813b4b16f212ad4ea532649eefff167190373",
+      "path": "vendor/openbim/src/Miki.OpenBim.Rhino/Miki.OpenBim.Rhino.csproj"
+    },
+    {
+      "sha256": "7dd1c1e51b3e08abe4fb9e66898576140fa46dca5921c21dea2c37365b884ac1",
+      "path": "vendor/openbim/src/Miki.OpenBim.Rhino/NativeGeometry.cs"
+    },
+    {
+      "sha256": "5cf8f48c8d439322a094da63f7d7b0a3ce675fcb5a48ba41b8fceff15c78f025",
+      "path": "vendor/openbim/src/Miki.OpenBim.Rhino/RhinoModel.cs"
+    },
+    {
+      "sha256": "5a3651b869be58ecbf19f6bf3ea64eebbfdc783d2af3268c7feab3dad666a6b4",
+      "path": "vendor/openbim/src/Miki.OpenBim/BuildingProject.cs"
+    },
+    {
+      "sha256": "b7df7411aece1f654075b978234c5956ed4fa6a21f82efef60806611087238cd",
+      "path": "vendor/openbim/src/Miki.OpenBim/Miki.OpenBim.csproj"
+    },
+    {
+      "sha256": "f47d62803563a304f55e843820ebf170550b632349c1533730ea5665bac2d3ec",
+      "path": "vendor/openbim/src/Miki.OpenBim/PlanGeometry.cs"
+    },
+    {
+      "sha256": "754fbb706749d819913d35b22b8968321116d26510133ba3f035ea87eda3e3bc",
+      "path": "vendor/openbim/src/Miki.OpenBim/ProjectEngine.Demo.cs"
+    },
+    {
+      "sha256": "f65c287e58cd1c4bccf44453ced86e6a05eccb92b3bf18a40d05a9bb00fef4d4",
+      "path": "vendor/openbim/src/Miki.OpenBim/ProjectEngine.cs"
+    },
+    {
+      "sha256": "5c5b014b6685e89b98b31bfe1615e4131357ddb79ecd9279eb87d453ed7ad700",
+      "path": "vendor/openbim/src/Miki.OpenBim/ProjectValidation.cs"
+    },
+    {
+      "sha256": "31475634e1ac8607150a41adb3f70638bee346b6b3b8319c9faa092a52a465db",
+      "path": ".gitignore"
+    },
+    {
+      "sha256": "a32dbf9d40a1353e270656eef3cdb986d5b055d16419a27a4260b1b4e9693087",
+      "path": "LICENSE"
+    },
+    {
+      "sha256": "bb6f3755789659d8ddbf5fc24baa0853f0b4e15d0f671500024a15cbcd31342c",
+      "path": "src/RhinoMagpie.Agent/MagpieGateway.cs"
+    },
+    {
+      "sha256": "8c1b6aeebb36b61c44d42a485c48269eb456d87cbd221c121cc08e4f2a082a89",
+      "path": "src/RhinoMagpie.Agent/ModelingSession.cs"
+    },
+    {
+      "sha256": "85e313d88996cf1be24f2d3b8799d6b100565de9694f49e532d60d55fd4646eb",
+      "path": "src/RhinoMagpie.Agent/PanelPreferences.cs"
+    },
+    {
+      "sha256": "da530a3d996be58758733231b2d2024b1e0fe21495d232eadf71600e44108214",
+      "path": "src/RhinoMagpie.Agent/ProjectWorkflow.cs"
+    },
+    {
+      "sha256": "9efb2946767356649e58a0fffc8318c1f528ea42746f7c0a68ca3af176410ecf",
+      "path": "src/RhinoMagpie.Agent/RhinoMagpie.Agent.csproj"
+    },
+    {
+      "sha256": "13f25ea66320318154b46d6275517dc33d535b1829e19862e8eb698ef060b38b",
+      "path": "src/RhinoMagpie.Agent/RhinoMcpClient.cs"
+    },
+    {
+      "sha256": "dd9dc864231a6219014d263e999ba7cdb5021c7f82c17cd5eb2e78609cb2e93b",
+      "path": "src/RhinoMagpie.Agent/StreamingChatReader.cs"
+    },
+    {
+      "sha256": "2d7df5ae91fec1c5045e53fa36ff76d134f1eefbe6b9c427849ed2560188b384",
+      "path": "src/RhinoMagpie.Agent/UserQuestion.cs"
+    },
+    {
+      "sha256": "2a62e573dc5d3d7bb4ddd3ade56b02f3b275d3dfdacfa01165df771af874c7ae",
+      "path": "src/RhinoMagpie.Plugin/DocumentMcp.cs"
+    },
+    {
+      "sha256": "2a48ee7fe914eadf48671678d5fe3fa2413bdf44834ecc824bfbd9233ae2f01a",
+      "path": "src/RhinoMagpie.Plugin/MagpiePanel.cs"
+    },
+    {
+      "sha256": "d06fb87d0effad0f54ebc89ea1fd8f02c097b9d5fb92ab025585f5f381e1e730",
+      "path": "src/RhinoMagpie.Plugin/MagpiePlugin.cs"
+    },
+    {
+      "sha256": "a302aa7fd0f41ae50466d73a8b520e94af3af22d20869848b5073ef2252289a5",
+      "path": "src/RhinoMagpie.Plugin/NativeAiIntegration.cs"
+    },
+    {
+      "sha256": "7d03907cc4eabf9ec81478558b5bb14f6fe61da26871b61ee4f596a18fce7af5",
+      "path": "src/RhinoMagpie.Plugin/PanelWebView.cs"
+    },
+    {
+      "sha256": "c985f8d40686dc64e1e04d9686af0a1bb804169a8462b02c03dfb9284f826681",
+      "path": "src/RhinoMagpie.Plugin/RhinoMagpie.Plugin.csproj"
+    },
+    {
+      "sha256": "a631d722c4df01ff03260b72bb789fd6aeab0931e530e56981688d550a623258",
+      "path": "src/RhinoMagpie.Plugin/Web/panel.html"
+    },
+    {
+      "sha256": "efc0eb6feec43e1519596e9562cbc6849cc4117cd6f7f47281d13b5a19cfbae7",
+      "path": "src/RhinoMagpie/BridgeConfig.cs"
+    },
+    {
+      "sha256": "47f3492a841a14413605f19403c9098e6a8d06df1a73d03a68794acb2e42d7f1",
+      "path": "tests/Agent.Tests/Agent.Tests.csproj"
+    },
+    {
+      "sha256": "c0cd548decd464ef39c19df772c13f94c9758db5e6c919d0e79105f9e656ad94",
+      "path": "tests/Agent.Tests/Program.cs"
+    },
+    {
+      "sha256": "7743a90c84a9232438be4f543e6276bd0adf211157316e48a6e99c0585e4f0a5",
+      "path": "tests/Workflow.Tests/Program.cs"
+    },
+    {
+      "sha256": "47f3492a841a14413605f19403c9098e6a8d06df1a73d03a68794acb2e42d7f1",
+      "path": "tests/Workflow.Tests/Workflow.Tests.csproj"
+    },
+    {
+      "sha256": "9766e5c23ed92e179f83e4bc7b5264e45eba90ddff7cdcb8e5b3d98267f429e8",
+      "path": "tests/browser/panel-scroll.test.mjs"
+    }
+  ]
+}

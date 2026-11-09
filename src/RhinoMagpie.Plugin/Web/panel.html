@@ -1,0 +1,1766 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Miki-Rhino</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: #f7f7f5;
+  --surface: #fff;
+  --soft: #efefed;
+  --text: #252628;
+  --muted: #73767b;
+  --line: #e3e4e3;
+  --blue: #286bd6;
+  --blue-soft: #edf3ff;
+  --danger: #b63d39;
+  --green: #338064;
+  --shadow: 0 12px 36px #151a2520;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+  font-size: 13px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #202122;
+    --surface: #282a2c;
+    --soft: #303235;
+    --text: #eceeed;
+    --muted: #a1a6ad;
+    --line: #3c3f42;
+    --blue: #8bb5ff;
+    --blue-soft: #293950;
+    --danger: #ffaaa3;
+    --green: #8ac9ae;
+    --shadow: 0 12px 36px #0006;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button,
+input,
+textarea,
+select {
+  border-radius: 9px;
+}
+
+button {
+  border: 1px solid transparent;
+  background: transparent;
+  min-height: 32px;
+  padding: 6px 10px;
+}
+
+button:hover {
+  background: var(--soft);
+}
+
+button:disabled {
+  cursor: default;
+  opacity: .45;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+button.primary {
+  background: var(--blue);
+  color: var(--bg);
+}
+
+button.primary:hover {
+  filter: brightness(.94);
+}
+
+button.secondary {
+  background: var(--surface);
+  border-color: var(--line);
+}
+
+button.icon {
+  width: 32px;
+  padding: 6px;
+  display: inline-grid;
+  place-items: center;
+}
+
+svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -.3px;
+}
+
+h2 {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.app {
+  max-width: 780px;
+  height: 100%;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.header {
+  padding: 14px 16px 10px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
+}
+
+.brand {
+  width: 26px;
+  height: 26px;
+  background: var(--text);
+  color: var(--bg);
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+}
+
+.brand svg {
+  width: 19px;
+  height: 19px;
+}
+
+.header-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 3px;
+}
+
+.context {
+  padding: 0 16px 12px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.model-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 4px 6px;
+  margin-left: -6px;
+  min-height: 28px;
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.model-button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.model-button svg {
+  width: 12px;
+  height: 12px;
+}
+
+.grounding {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 5px;
+}
+
+.grounding svg {
+  width: 13px;
+  height: 13px;
+}
+
+.document-name {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.units {
+  white-space: nowrap;
+}
+
+.dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex-shrink: 0;
+}
+
+.viewport {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+  overflow-anchor: auto;
+}
+
+.empty {
+  padding: 34px 9px 28px;
+  max-width: 360px;
+  margin: auto;
+}
+
+.empty-mark {
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
+.empty-mark svg {
+  width: 33px;
+  height: 33px;
+  stroke-width: 1.1;
+}
+
+.empty h2 {
+  font-size: 18px;
+  line-height: 1.5;
+  font-weight: 600;
+  letter-spacing: -.4px;
+}
+
+.empty p {
+  line-height: 1.9;
+  color: var(--muted);
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.empty button {
+  margin-top: 18px;
+}
+
+.plan {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 12px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.plan summary {
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 550;
+}
+
+.plan summary::-webkit-details-marker {
+  display: none;
+}
+
+.chevron {
+  width: 13px;
+  height: 13px;
+  transition: transform .15s;
+}
+
+details[open] > summary .chevron {
+  transform: rotate(90deg);
+}
+
+.plan-count {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+.plan-content {
+  padding: 0 12px 12px;
+  max-height: min(220px, 28vh);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.goal {
+  font-size: 12px;
+  line-height: 1.75;
+  color: var(--muted);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin-bottom: 12px;
+}
+
+.plan-basis {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.basis-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.basis-status {
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.plan-basis[data-confirmed="true"] .basis-status {
+  color: var(--green);
+}
+
+.basis-note {
+  margin-top: 5px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.step {
+  display: flex;
+  gap: 9px;
+  padding: 8px 0;
+}
+
+.step-marker {
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  color: var(--muted);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.step[data-status="done"] .step-marker {
+  background: var(--green);
+  color: var(--bg);
+  border-color: transparent;
+}
+
+.step[data-status="running"] .step-marker {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.step[data-status="failed"] .step-marker {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.step-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.step-title {
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.step-acceptance {
+  font-size: 11px;
+  line-height: 1.7;
+  margin-top: 3px;
+  color: var(--muted);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.step-status {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: 19px;
+}
+
+.message {
+  min-width: 0;
+}
+
+.message.user {
+  align-self: flex-end;
+  max-width: 91%;
+  padding: 10px 13px;
+  border-radius: 14px 14px 4px 14px;
+  background: var(--soft);
+}
+
+.message.assistant {
+  padding: 0 1px;
+}
+
+.author {
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 6px;
+  letter-spacing: .15px;
+}
+
+.message-text {
+  font-size: 13px;
+  line-height: 1.85;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  tab-size: 2;
+}
+
+.message-detail {
+  margin-top: 9px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.message-detail summary {
+  cursor: pointer;
+}
+
+.message-detail pre,
+.tool-detail {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.7;
+  margin: 8px 0 0;
+  overscroll-behavior: contain;
+}
+
+.message-detail pre {
+  max-height: 280px;
+  overflow: auto;
+}
+
+.notice {
+  border-left: 2px solid var(--line);
+  padding: 3px 0 3px 10px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.notice.error {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.tool {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tool summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.tool summary::-webkit-details-marker {
+  display: none;
+}
+
+.tool-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.tool-badge {
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.tool-symbol {
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  width: 16px;
+  flex-shrink: 0;
+}
+
+.tool[data-status="failed"] {
+  border-color: var(--danger);
+}
+
+.tool[data-status="failed"] .tool-badge,
+.tool[data-status="failed"] .tool-symbol {
+  color: var(--danger);
+}
+
+.tool[data-status="done"] .tool-symbol {
+  color: var(--green);
+}
+
+.tool-detail {
+  border-top: 1px solid var(--line);
+  padding: 10px 12px;
+  margin: 0;
+  max-height: 280px;
+  overflow: auto;
+}
+
+.tool-preview {
+  margin: 0;
+  padding: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.tool-preview img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  max-height: 280px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: var(--bg);
+}
+
+.tool-preview figcaption {
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--line);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .spinner {
+    border-top-width: 3px;
+  }
+}
+
+.footer {
+  padding: 10px 12px 12px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.review {
+  background: var(--blue-soft);
+  padding: 11px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.review p {
+  font-size: 12px;
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.review button {
+  font-size: 12px;
+}
+
+.references {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  max-height: 92px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  scrollbar-width: thin;
+}
+
+.reference {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 8px;
+  max-width: 100%;
+  padding: 2px 3px 2px 7px;
+  font-size: 11px;
+}
+
+.reference-name {
+  max-width: 132px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.reference button {
+  min-height: 25px;
+  padding: 3px 5px;
+  font-size: 10px;
+}
+
+.reference .remove {
+  width: 24px;
+  padding: 4px;
+}
+
+.reference svg {
+  width: 12px;
+  height: 12px;
+}
+
+.composer {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 13px;
+  padding: 9px 9px 7px;
+  transition: border-color .15s;
+}
+
+.composer:focus-within {
+  border-color: var(--blue);
+}
+
+textarea {
+  display: block;
+  resize: none;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  min-height: 47px;
+  max-height: 150px;
+  padding: 3px 3px 7px;
+  line-height: 1.7;
+  outline: none !important;
+  font-size: 13px;
+}
+
+textarea::placeholder {
+  color: var(--muted);
+}
+
+.composer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.composer-hint {
+  color: var(--muted);
+  font-size: 10px;
+  flex: 1;
+}
+
+.send {
+  width: 30px;
+  height: 30px;
+  min-height: 30px !important;
+  display: grid;
+  place-items: center;
+  padding: 6px;
+  border-radius: 9px;
+}
+
+.execution-mode {
+  color: var(--blue);
+  flex-shrink: 0;
+}
+
+.status-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 3px 0;
+  font-size: 10px;
+  color: var(--muted);
+  min-height: 22px;
+}
+
+.status-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.status-line button {
+  min-height: 20px;
+  font-size: 10px;
+  padding: 1px 4px;
+}
+
+.jump {
+  position: absolute;
+  right: 20px;
+  bottom: 100%;
+  margin-bottom: 12px;
+  background: var(--surface);
+  border-color: var(--line);
+  box-shadow: var(--shadow);
+  border-radius: 18px;
+  font-size: 11px;
+}
+
+.footer-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.popover {
+  position: absolute;
+  top: 53px;
+  right: 12px;
+  width: 286px;
+  max-width: calc(100% - 24px);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  box-shadow: var(--shadow);
+  padding: 14px;
+  z-index: 5;
+  max-height: calc(100% - 70px);
+  overflow: auto;
+}
+
+.popover h2 {
+  margin-bottom: 12px;
+}
+
+.setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  font-size: 12px;
+}
+
+.setting-copy small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+  margin-top: 3px;
+}
+
+input[type="checkbox"] {
+  appearance: none;
+  width: 30px;
+  height: 18px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: var(--line);
+  position: relative;
+  cursor: pointer;
+  margin: 0;
+}
+
+input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  left: 2px;
+  top: 2px;
+  background: var(--surface);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px #0002;
+}
+
+input[type="checkbox"]:checked {
+  background: var(--blue);
+}
+
+input[type="checkbox"]:checked::after {
+  left: 14px;
+}
+
+select {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 6px;
+  max-width: 120px;
+}
+
+.model-popover {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  left: 12px;
+  right: auto;
+  top: 88px;
+  width: calc(100% - 24px);
+  max-height: 65%;
+}
+
+.search {
+  flex-shrink: 0;
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  padding: 9px 10px;
+  margin-bottom: 8px;
+}
+
+.model-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.model-popover > .status-line {
+  flex-shrink: 0;
+}
+
+.model-option {
+  text-align: left;
+  border-radius: 8px;
+  min-width: 0;
+  display: block;
+  width: 100%;
+  padding: 9px 10px;
+}
+
+.model-option[aria-selected="true"] {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.model-label {
+  display: block;
+  font-weight: 550;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.model-id {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+
+.no-models {
+  padding: 12px 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: #0004;
+  z-index: 9;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.dialog {
+  width: 100%;
+  max-width: 340px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.dialog p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.8;
+  margin: 10px 0 16px;
+  overflow-wrap: anywhere;
+}
+
+.dialog label {
+  font-size: 12px;
+  display: block;
+  margin-bottom: 7px;
+}
+
+.width-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.width-row input {
+  min-width: 0;
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 10px;
+}
+
+.width-row span {
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 18px;
+}
+
+.dialog-error {
+  color: var(--danger);
+  font-size: 11px;
+  line-height: 1.7;
+  margin-top: 7px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 360px) {
+  .header {
+    padding: 12px;
+  }
+
+  .context {
+    padding: 0 12px 10px;
+  }
+
+  .viewport {
+    padding: 14px 12px;
+  }
+
+  .footer {
+    padding: 9px 10px 10px;
+  }
+
+  .composer-hint {
+    font-size: 9px;
+  }
+
+  .reference-name {
+    max-width: 105px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div class="brand" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17 8 5l5 7 6-7 1 14M8 5l2 14M13 12l-3 7"/></svg></div>
+    <h1>Miki-Rhino</h1>
+    <div class="header-actions">
+      <button class="icon" id="new-chat" title="新对话" aria-label="新对话"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button class="icon" id="settings-button" title="设置" aria-label="设置" aria-expanded="false" aria-controls="settings"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="var(--bg)"/><circle cx="15" cy="17" r="3" fill="var(--bg)"/></svg></button>
+    </div>
+  </header>
+  <div class="context">
+    <button class="model-button" id="model-button" aria-expanded="false" aria-controls="model-picker"><span id="selected-model">选择模型</span><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4"/></svg></button>
+    <div class="grounding"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2h5l3 3v9H4zM9 2v4h3"/></svg><span class="document-name" id="document" title="">等待 Rhino 文档</span><span class="dot"></span><span class="units" id="units">单位待确认</span></div>
+  </div>
+  <main class="viewport" id="viewport" aria-label="对话与执行进度" tabindex="0">
+    <details class="plan" id="plan" hidden open>
+      <summary><svg class="chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m6 4 4 4-4 4"/></svg><span>阶段计划</span><span class="plan-count" id="plan-count"></span></summary>
+      <div class="plan-content">
+        <p class="goal" id="goal"></p>
+        <div class="plan-basis" id="plan-basis" hidden>
+          <div class="basis-heading"><span>建模依据</span><span class="basis-status" id="basis-status"></span></div>
+          <p class="basis-note" id="basis-note"></p>
+        </div>
+        <ol class="steps" id="steps"></ol>
+      </div>
+    </details>
+    <section class="empty" id="empty">
+      <div class="empty-mark" aria-hidden="true"><svg viewBox="0 0 36 36"><path d="M5 30V7h26v23H5Zm0-9h12V7m0 14h14M23 21v9M11 12v4M11 26h2"/></svg></div>
+      <h2>从图纸和尺寸开始</h2>
+      <p>添加平面图或参考文件，并说明实际尺寸。Miki-Rhino 会结合当前文档单位，分阶段协助你建立和完善模型。</p>
+      <p>这里会显示回复、公开计划和工具执行结果，你可以随时停止并调整方向。</p>
+      <button class="secondary" id="empty-attach">添加参考文件</button>
+    </section>
+    <div class="messages" id="messages" aria-label="对话记录"></div>
+  </main>
+  <div class="footer-wrap">
+    <button class="jump" id="jump" hidden>↓ 查看最新内容</button>
+    <footer class="footer">
+      <section class="review" id="review" hidden aria-label="结果待确认"><p>本轮结果待你确认，可以继续提出修改。</p><div class="review-actions"><button class="secondary" id="continue">继续完善</button><button class="primary" id="accept">接受当前结果</button></div></section>
+      <div class="references" id="references" aria-label="参考文件" hidden></div>
+      <div class="composer">
+        <label class="sr-only" for="draft">描述你的设计或修改要求</label>
+        <textarea id="draft" rows="2" placeholder="描述你的设计，或告诉我哪里需要调整…" spellcheck="false"></textarea>
+        <div class="composer-toolbar">
+          <button class="icon" id="attach" aria-label="添加参考文件" title="添加参考文件"><svg viewBox="0 0 24 24"><path d="m8 13 7-7a3 3 0 0 1 4 4l-9 9a5 5 0 0 1-7-7L13 2m-7 13 9-9"/></svg></button>
+          <span class="composer-hint">Enter 发送 · Shift + Enter 换行</span>
+          <button class="send primary" id="send" aria-label="发送" title="发送" disabled><svg id="send-icon" viewBox="0 0 24 24"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
+        </div>
+      </div>
+      <div class="status-line"><span class="spinner" id="busy-indicator" hidden aria-hidden="true"></span><span class="execution-mode" id="execution-mode">逐次确认</span><span class="status-text" id="status" role="status" aria-live="polite">准备就绪</span><button id="refresh" title="刷新文档与模型信息">刷新</button></div>
+    </footer>
+  </div>
+  <section class="popover" id="settings" aria-label="设置" hidden>
+    <h2>执行与建模设置</h2>
+    <div class="setting"><span class="setting-copy">所选 API 端点<small id="connection-endpoint">尚未配置</small></span><button class="secondary" id="configure-connection" type="button">模型连接</button></div>
+    <label class="setting"><span class="setting-copy">YOLO 自动执行<small>免逐次工具确认，跨对话和重启记住选择；尺度假设仍会询问</small></span><input type="checkbox" id="auto-tools"></label>
+    <label class="setting"><span class="setting-copy">建筑模式<small>先确认图纸与尺度，再分阶段建模</small></span><input type="checkbox" id="architectural" checked></label>
+    <label class="setting" for="detail"><span>目标精细度</span><select id="detail"><option value="concept">概念</option><option value="developed" selected>深化</option><option value="detailed">详细</option></select></label>
+    <div class="setting"><span class="setting-copy">本地 IFC 导出<small>选择保存位置并读回验证</small></span><button class="secondary" id="export-ifc" type="button" disabled>导出 IFC</button></div>
+  </section>
+  <section class="popover model-popover" id="model-picker" aria-label="选择模型" hidden>
+    <label class="sr-only" for="model-search">搜索模型名称或 ID</label><input class="search" id="model-search" type="search" placeholder="搜索模型名称或 ID…" autocomplete="off">
+    <div class="model-list" id="model-list" role="listbox" aria-label="模型"></div>
+    <p class="no-models" id="no-models" hidden>没有匹配的模型</p>
+    <div class="status-line"><span class="status-text" id="catalog-status" role="status">模型列表尚未加载</span><button id="catalog-refresh" type="button">刷新列表</button></div>
+  </section>
+  <div class="scrim" id="width-overlay" hidden>
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="width-title" aria-describedby="width-help">
+      <h2 id="width-title">设置图片实际宽度</h2>
+      <p id="width-help">按当前文档单位输入图片覆盖的真实宽度，确认后导入 Rhino。</p>
+      <form id="width-form" novalidate>
+        <label for="image-width" id="width-label">实际宽度</label>
+        <div class="width-row"><input id="image-width" type="number" inputmode="decimal" min="0" step="any" required aria-describedby="width-error"><span id="width-units"></span></div>
+        <div class="dialog-error" id="width-error" role="alert" hidden></div>
+        <div class="dialog-actions"><button type="button" class="secondary" id="width-cancel">取消</button><button type="submit" class="primary" id="width-import">确认并导入</button></div>
+      </form>
+    </section>
+  </div>
+</div>
+<script>
+(function () {
+  "use strict";
+  const byId = function (id) { return document.getElementById(id); };
+  const viewport = byId("viewport");
+  const composer = byId("draft");
+  const state = { documentId: "", document: "", units: "", unitsKey: "", status: "", endpoint: "", configuredModel: "", busy: false, canSend: false, canStop: false, draft: "", autoTools: false, executionModeRevision: 0, architectural: true, detail: "developed", models: [], catalogLoading: false, catalogError: "", selectedModel: "", messages: [], references: [], plan: null };
+  const messageNodes = new Map();
+  const stepNodes = new Map();
+  const referenceNodes = new Map();
+  let localDraft = false;
+  let draftTimer = null;
+  let pendingDraft = null;
+  let composing = false;
+  let pinned = true;
+  let widthReference = null;
+  let returnFocus = null;
+  let widthUnits = "";
+  let widthUnitsKey = "";
+  let widthDocumentId = "";
+  let widthInvalidated = false;
+  let lastHostDraft = "";
+  let bridgeError = "";
+  let followFrame = null;
+  let scrollDrag = null;
+  let touchScrollY = null;
+  function string(value) { return value == null ? "" : String(value); }
+  function text(node, value) {
+    const next = string(value);
+    const previous = node.textContent;
+    if (previous === next) return;
+    if (node.matches("pre, .message-text") && node.childNodes.length === 1 &&
+        node.firstChild.nodeType === Node.TEXT_NODE && next.startsWith(previous)) {
+      node.firstChild.appendData(next.slice(previous.length));
+    } else node.textContent = next;
+  }
+  function element(tag, className, content) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (content != null) text(node, content);
+    return node;
+  }
+  function hasBridge() {
+    return Boolean(window.eto && typeof window.eto.postMessage === "function") ||
+      typeof window.magpiePreviewSend === "function";
+  }
+  function send(action) {
+    const outgoing = action.action === "ready" || action.action === "stop"
+      ? action
+      : Object.assign({ documentId: string(state.documentId) }, action);
+    try {
+      if (window.eto && typeof window.eto.postMessage === "function") window.eto.postMessage(JSON.stringify(outgoing));
+      else if (typeof window.magpiePreviewSend === "function") window.magpiePreviewSend(outgoing);
+      else throw new Error("请在 Rhino 侧栏打开，或连接预览桥接后重试。");
+      bridgeError = "";
+      text(byId("status"), publicStatus());
+      byId("status").title = publicStatus();
+      return true;
+    } catch (error) {
+      bridgeError = "连接未就绪，" + string(error.message || error);
+      text(byId("status"), bridgeError);
+      return false;
+    }
+  }
+  function announceReady(attemptsRemaining) {
+    if (hasBridge() && send({ action: "ready" })) return;
+    if (attemptsRemaining > 1) {
+      setTimeout(function () { announceReady(attemptsRemaining - 1); }, 150);
+    } else if (!hasBridge()) {
+      send({ action: "ready" });
+    }
+  }
+  function progressKind(value) {
+    const name = string(value).toLowerCase();
+    if (["complete", "completed", "done", "success", "succeeded", "passed"].includes(name)) return "done";
+    if (["running", "in_progress", "inprogress", "executing", "active", "streaming"].includes(name)) return "running";
+    if (["error", "failed", "failure", "blocked"].includes(name)) return "failed";
+    return "pending";
+  }
+  function statusLabel(value) {
+    const name = string(value);
+    const labels = { pending: "待进行", running: "进行中", in_progress: "进行中", inProgress: "进行中", executing: "执行中", active: "进行中", streaming: "输出中", complete: "已完成", completed: "已完成", done: "已完成", success: "成功", succeeded: "成功", passed: "已通过", error: "错误", failed: "失败", failure: "失败", blocked: "受阻", paused: "已暂停", cancelled: "已取消", canceled: "已取消", skipped: "已跳过" };
+    return labels[name] || name || "待进行";
+  }
+  function publicStatus() {
+    return bridgeError || string(state.status) || (state.busy ? "正在执行" : "准备就绪");
+  }
+  function nearBottom() { return viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop <= 2; }
+  function updateJump() { byId("jump").hidden = pinned || viewport.scrollHeight <= viewport.clientHeight + 2; }
+  function pauseFollow() {
+    pinned = false;
+    if (followFrame !== null) cancelAnimationFrame(followFrame);
+    followFrame = null;
+    updateJump();
+  }
+  function scrollIntent(target, distance) {
+    pauseFollow();
+    if (target.closest(".tool-detail, .message-detail pre, .plan-content")) return;
+    if (distance > 0 && viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop <= distance + 2) {
+      pinned = true;
+      followBottom();
+    }
+  }
+  function followBottom() {
+    if (followFrame !== null) cancelAnimationFrame(followFrame);
+    followFrame = requestAnimationFrame(function () {
+      followFrame = null;
+      if (pinned) viewport.scrollTop = viewport.scrollHeight;
+      updateJump();
+    });
+  }
+  function fitComposer() {
+    const selectionScroll = composer.scrollTop;
+    composer.style.height = "auto";
+    composer.style.height = Math.min(composer.scrollHeight, 150) + "px";
+    composer.scrollTop = selectionScroll;
+  }
+  function refreshControls() {
+    const stopping = Boolean(state.canStop);
+    const disabled = stopping ? false : Boolean(state.busy) || !state.canSend || !composer.value.trim();
+    byId("send").disabled = disabled;
+    byId("send").setAttribute("aria-label", stopping ? "停止执行" : "发送");
+    byId("send").title = stopping ? "停止执行" : "发送";
+    const iconPath = byId("send-icon").firstElementChild;
+    const nextPath = stopping ? "M7 7h10v10H7z" : "M12 19V5m-6 6 6-6 6 6";
+    if (iconPath.getAttribute("d") !== nextPath) iconPath.setAttribute("d", nextPath);
+    ["new-chat", "attach", "empty-attach", "continue", "accept", "auto-tools", "architectural", "detail", "refresh"].forEach(function (id) { byId(id).disabled = Boolean(state.busy); });
+    byId("model-button").disabled = Boolean(state.busy);
+    byId("catalog-refresh").disabled = Boolean(state.busy);
+    byId("configure-connection").disabled = Boolean(state.busy);
+    byId("export-ifc").disabled = Boolean(state.busy || state.canStop || state.catalogLoading) ||
+      !string(state.documentId) || string(state.documentId) === "0";
+    const catalog = state.models.filter(function (model) { return model && model.id; });
+    text(byId("catalog-status"), state.catalogLoading ? "正在获取所选服务的模型列表…" :
+      state.catalogError || (catalog.length ? catalog.length + " 个模型 ID" : "尚未加载列表，可使用手动配置的模型 ID"));
+    byId("catalog-status").title = string(state.catalogError);
+    byId("busy-indicator").hidden = !state.busy;
+    text(byId("status"), publicStatus());
+    text(byId("execution-mode"), state.autoTools ? "YOLO" : "逐次确认");
+    byId("execution-mode").title = state.autoTools ? "自动执行工具 · 已记住选择" : "每次修改前确认";
+    byId("status").title = publicStatus();
+  }
+  function reconcile(container, items, cache, create, update) {
+    const retained = new Set();
+    items.forEach(function (item, index) {
+      if (!item || typeof item !== "object") return;
+      let key = item.id == null ? "index-" + index : String(item.id);
+      if (retained.has(key)) key += "-duplicate-" + index;
+      retained.add(key);
+      let node = cache.get(key);
+      if (!node) { node = create(item); cache.set(key, node); }
+      update(node, item, index);
+      const occupant = container.children[index];
+      if (occupant !== node) container.insertBefore(node, occupant || null);
+    });
+    cache.forEach(function (node, key) {
+      if (!retained.has(key)) { node.remove(); cache.delete(key); }
+    });
+  }
+  function makeMessage() { return element("article", "message"); }
+  function messageType(item) {
+    if (item.type === "tool" || item.role === "tool") return "tool";
+    if (item.type === "notice" || item.role === "system") return "notice";
+    if (item.role === "user") return "user";
+    if (item.role === "assistant") return "assistant";
+    return "notice";
+  }
+  function renderMessage(node, item) {
+    const kind = messageType(item);
+    if (node.dataset.kind !== kind) {
+      node.replaceChildren();
+      node.dataset.kind = kind;
+      node.className = kind === "tool" ? "message" : "message " + kind;
+      if (kind === "tool") {
+        const disclosure = element("details", "tool");
+        const summary = element("summary");
+        summary.append(element("span", "tool-symbol"), element("span", "tool-name"), element("span", "tool-badge"), element("span", "chevron", "›"));
+        const preview = element("figure", "tool-preview");
+        const image = element("img");
+        image.alt = "Rhino 视口预览";
+        preview.hidden = true;
+        image.addEventListener("load", function () {
+          if (pinned) followBottom();
+        });
+        image.addEventListener("error", function () {
+          preview.hidden = true;
+          if (pinned) followBottom();
+        });
+        preview.append(image, element("figcaption", "", "视口预览"));
+        disclosure.append(summary, element("pre", "tool-detail"), preview);
+        node.append(disclosure);
+      } else {
+        if (kind === "assistant") node.append(element("div", "author", "Miki-Rhino"));
+        node.append(element("div", "message-text"));
+        const detail = element("details", "message-detail");
+        detail.append(element("summary", "", "查看详情"), element("pre"));
+        node.append(detail);
+      }
+    }
+    const progress = progressKind(item.state);
+    if (kind === "tool") {
+      const disclosure = node.firstElementChild;
+      disclosure.dataset.status = progress;
+      text(disclosure.querySelector(".tool-name"), item.text || "工具执行");
+      text(disclosure.querySelector(".tool-badge"), statusLabel(item.state));
+      const symbol = disclosure.querySelector(".tool-symbol");
+      if (symbol.dataset.status !== progress) {
+        symbol.replaceChildren();
+        if (progress === "running") symbol.append(element("span", "spinner"));
+        else text(symbol, progress === "failed" ? "!" : progress === "done" ? "✓" : "·");
+        symbol.dataset.status = progress;
+      }
+      const detail = disclosure.querySelector(".tool-detail");
+      text(detail, item.detail || "暂无执行详情");
+      const preview = disclosure.querySelector(".tool-preview");
+      const image = preview.querySelector("img");
+      const source = typeof item.image === "string" && item.image.startsWith("data:image/") ? item.image : "";
+      if (!source) {
+        preview.hidden = true;
+        image.removeAttribute("src");
+      } else if (image.getAttribute("src") !== source) {
+        preview.hidden = false;
+        image.src = source;
+      }
+    } else {
+      node.classList.toggle("error", progress === "failed");
+      text(node.querySelector(".message-text"), item.text);
+      const detail = node.querySelector(".message-detail");
+      detail.hidden = !item.detail;
+      text(detail.querySelector("pre"), item.detail);
+    }
+  }
+  function renderPlan() {
+    const plan = state.plan;
+    byId("plan").hidden = !plan;
+    byId("review").hidden = !(plan && plan.awaitingReview);
+    if (!plan) return;
+    text(byId("goal"), plan.goal);
+    const basis = byId("plan-basis");
+    basis.hidden = !plan.basis && typeof plan.basisConfirmed !== "boolean";
+    basis.dataset.confirmed = String(plan.basisConfirmed === true);
+    text(byId("basis-status"), plan.basisConfirmed === true ? "已确认" : "待确认");
+    text(byId("basis-note"), plan.basis);
+    byId("basis-note").hidden = !plan.basis;
+    const steps = Array.isArray(plan.steps) ? plan.steps : [];
+    const completed = steps.filter(function (step) { return step && progressKind(step.status) === "done"; }).length;
+    text(byId("plan-count"), completed + " / " + steps.length);
+    reconcile(byId("steps"), steps, stepNodes, function () {
+      const node = element("li", "step");
+      const copy = element("div", "step-copy");
+      copy.append(element("div", "step-title"), element("div", "step-acceptance"), element("div", "step-status"));
+      node.append(element("span", "step-marker"), copy);
+      return node;
+    }, function (node, step, index) {
+      const progress = progressKind(step.status);
+      node.dataset.status = progress;
+      text(node.querySelector(".step-marker"), progress === "done" ? "✓" : progress === "failed" ? "!" : index + 1);
+      text(node.querySelector(".step-title"), step.title);
+      text(node.querySelector(".step-acceptance"), step.acceptance);
+      node.querySelector(".step-acceptance").hidden = !step.acceptance;
+      text(node.querySelector(".step-status"), statusLabel(step.status));
+    });
+  }
+  function isImage(reference) { return /^(image|img|picture|raster)$/i.test(string(reference.kind)) || /^image\//i.test(string(reference.kind)) || /\.(png|jpe?g|gif|webp|bmp|tiff?|heic)$/i.test(string(reference.name)); }
+  function renderReferences() {
+    byId("references").hidden = state.references.length === 0;
+    reconcile(byId("references"), state.references, referenceNodes, function () {
+      const node = element("div", "reference");
+      node.append(element("span", "reference-name"));
+      const importButton = element("button", "", "导入");
+      const removeButton = element("button", "remove", "×");
+      importButton.type = "button";
+      removeButton.type = "button";
+      importButton.addEventListener("click", function () {
+        const reference = node.reference;
+        if (state.busy) return;
+        if (isImage(reference)) openWidth(reference, importButton);
+        else send({ action: "importReference", id: reference.id });
+      });
+      removeButton.addEventListener("click", function () {
+        if (!state.busy) send({ action: "removeReference", id: node.reference.id });
+      });
+      node.append(importButton, removeButton);
+      return node;
+    }, function (node, reference) {
+      node.reference = reference;
+      text(node.firstElementChild, reference.name || "参考文件");
+      node.firstElementChild.title = string(reference.name);
+      const importButton = node.children[1];
+      text(importButton, isImage(reference) ? "设宽导入" : "导入");
+      importButton.setAttribute("aria-label", "导入 " + string(reference.name));
+      importButton.title = isImage(reference) ? "设置实际宽度后导入 Rhino" : "通过 Rhino 导入文件";
+      importButton.disabled = Boolean(state.busy);
+      node.children[2].disabled = Boolean(state.busy);
+      node.children[2].setAttribute("aria-label", "移除 " + string(reference.name));
+    });
+  }
+  function renderModels() {
+    const query = byId("model-search").value.toLocaleLowerCase().trim();
+    const models = state.models.filter(function (model) { return model && (string(model.label) + " " + string(model.id)).toLocaleLowerCase().includes(query); });
+    const list = byId("model-list");
+    list.replaceChildren();
+    models.forEach(function (model) {
+      const button = element("button", "model-option");
+      button.type = "button";
+      button.setAttribute("role", "option");
+      button.setAttribute("aria-selected", String(model.id === state.selectedModel));
+      button.disabled = Boolean(state.busy);
+      button.append(element("span", "model-label", model.label || model.id), element("span", "model-id", model.id));
+      button.addEventListener("click", function () {
+        if (!state.busy && send({ action: "model", id: model.id })) closePopover("model-picker", true);
+      });
+      list.append(button);
+    });
+    byId("no-models").hidden = models.length > 0;
+    text(byId("no-models"), state.models.length ? "没有匹配的模型" : "暂无可用模型，请刷新连接");
+  }
+  function closePopover(id, restore) {
+    byId(id).hidden = true;
+    const trigger = byId(id === "settings" ? "settings-button" : "model-button");
+    trigger.setAttribute("aria-expanded", "false");
+    if (restore) trigger.focus();
+  }
+  function togglePopover(id) {
+    const opening = byId(id).hidden;
+    closePopover(id === "settings" ? "model-picker" : "settings", false);
+    byId(id).hidden = !opening;
+    byId(id === "settings" ? "settings-button" : "model-button").setAttribute("aria-expanded", String(opening));
+    if (opening) {
+      if (id === "model-picker") { renderModels(); byId("model-search").focus(); send({ action: "catalog" }); }
+      else byId("auto-tools").focus();
+    }
+  }
+  function widthError(message) { text(byId("width-error"), message); byId("width-error").hidden = !message; byId("image-width").setAttribute("aria-invalid", String(Boolean(message))); }
+  function openWidth(reference, trigger) {
+    closePopover("settings", false);
+    closePopover("model-picker", false);
+    returnFocus = trigger;
+    widthReference = reference.id;
+    widthUnits = string(state.units);
+    widthUnitsKey = string(state.unitsKey);
+    widthDocumentId = string(state.documentId);
+    widthInvalidated = false;
+    byId("width-overlay").hidden = false;
+    text(byId("width-label"), string(reference.name) + " 的实际宽度");
+    text(byId("width-units"), widthUnits || "单位待确认");
+    byId("image-width").value = Number(reference.width) > 0 ? reference.width : "";
+    widthError(widthUnitsKey ? "" : "请先在 Rhino 中确认文档单位并刷新。");
+    byId("width-import").disabled = !widthUnitsKey || Boolean(state.busy);
+    byId("image-width").focus();
+    byId("image-width").select();
+  }
+  function closeWidth(restoreFocus = true) {
+    byId("width-overlay").hidden = true;
+    widthReference = null;
+    widthUnitsKey = "";
+    widthDocumentId = "";
+    widthInvalidated = false;
+    byId("image-width").value = "";
+    if (restoreFocus) {
+      if (returnFocus && returnFocus.isConnected && !returnFocus.disabled) returnFocus.focus();
+      else byId("attach").focus();
+    }
+    returnFocus = null;
+  }
+  function cancelDraftSend() {
+    clearTimeout(draftTimer);
+    draftTimer = null;
+    pendingDraft = null;
+  }
+  function flushDraft() {
+    const draft = pendingDraft || { documentId: string(state.documentId), text: composer.value };
+    cancelDraftSend();
+    if (draft.documentId === string(state.documentId)) send({ action: "draft", text: draft.text, documentId: draft.documentId });
+  }
+  function submit() {
+    if (state.canStop) { send({ action: "stop" }); return; }
+    if (state.busy || !state.canSend || !composer.value.trim() || composing) return;
+    cancelDraftSend();
+    const value = composer.value;
+    const documentId = string(state.documentId);
+    if (send({ action: "send", text: value, documentId: documentId })) {
+      if (documentId === string(state.documentId) && composer.value === value) {
+        composer.value = "";
+        localDraft = true;
+        fitComposer();
+        send({ action: "draft", text: "", documentId: documentId });
+      }
+      refreshControls();
+      followBottom();
+    }
+  }
+  window.magpie = {
+    applyState: function (incoming) {
+      if (!incoming || typeof incoming !== "object") return;
+      bridgeError = "";
+      const previousDocumentId = string(state.documentId);
+      const modelsBefore = JSON.stringify([state.models, state.selectedModel, state.busy]);
+      Object.keys(state).forEach(function (key) {
+        if (Object.prototype.hasOwnProperty.call(incoming, key)) state[key] = incoming[key];
+      });
+      ["messages", "models", "references"].forEach(function (key) { if (!Array.isArray(state[key])) state[key] = []; });
+      if (previousDocumentId !== string(state.documentId)) {
+        cancelDraftSend();
+        localDraft = false;
+        composing = false;
+        lastHostDraft = string(incoming.draft);
+        state.draft = lastHostDraft;
+        state.unitsKey = string(incoming.unitsKey);
+        composer.value = lastHostDraft;
+        fitComposer();
+        if (!byId("width-overlay").hidden) {
+          const dialogFocused = byId("width-overlay").contains(document.activeElement);
+          closeWidth(false);
+          if (dialogFocused) composer.focus();
+        }
+      } else if (Object.prototype.hasOwnProperty.call(incoming, "draft")) {
+        const hostDraft = string(incoming.draft);
+        if (hostDraft === composer.value) localDraft = false;
+        if (!localDraft && document.activeElement !== composer && !composing && hostDraft !== lastHostDraft && composer.value !== hostDraft) {
+          composer.value = hostDraft;
+          fitComposer();
+        }
+        lastHostDraft = hostDraft;
+      }
+      text(byId("document"), state.document || "等待 Rhino 文档");
+      byId("document").title = string(state.document);
+      text(byId("units"), state.units || "单位待确认");
+      const selected = state.models.find(function (model) { return model && model.id === state.selectedModel; });
+      let selectedLabel = state.selectedModel || state.configuredModel || "选择模型";
+      if (selected) selectedLabel = selected.id ? selected.label || selected.id : state.configuredModel || selected.label;
+      text(byId("selected-model"), selectedLabel);
+      byId("model-button").title = selected ? string(selected.label) + " · " + string(selected.id) : string(state.selectedModel);
+      byId("auto-tools").checked = Boolean(state.autoTools);
+      text(byId("connection-endpoint"), state.endpoint || "尚未配置");
+      byId("connection-endpoint").title = string(state.endpoint);
+      byId("architectural").checked = state.architectural !== false;
+      byId("detail").value = ["concept", "developed", "detailed"].includes(state.detail) ? state.detail : "developed";
+      renderPlan();
+      reconcile(byId("messages"), state.messages, messageNodes, makeMessage, renderMessage);
+      renderReferences();
+      byId("empty").hidden = state.messages.length > 0 || Boolean(state.plan);
+      if (!byId("model-picker").hidden && modelsBefore !== JSON.stringify([state.models, state.selectedModel, state.busy])) renderModels();
+      if (!byId("width-overlay").hidden) {
+        const referenceExists = state.references.some(function (reference) { return reference && reference.id === widthReference; });
+        if (!referenceExists) closeWidth();
+        else {
+          if (widthUnitsKey !== string(state.unitsKey)) widthInvalidated = true;
+          byId("width-import").disabled = Boolean(state.busy) || !widthUnitsKey || widthInvalidated;
+          if (widthInvalidated) widthError("文档单位已改变，请取消后重新设置实际宽度。");
+        }
+      }
+      refreshControls();
+      if (pinned) followBottom();
+      else updateJump();
+    }
+  };
+  composer.addEventListener("input", function () {
+    localDraft = true;
+    fitComposer();
+    refreshControls();
+    clearTimeout(draftTimer);
+    pendingDraft = { documentId: string(state.documentId), text: composer.value };
+    draftTimer = setTimeout(flushDraft, 180);
+  });
+  composer.addEventListener("compositionstart", function () { composing = true; });
+  composer.addEventListener("compositionend", function () { composing = false; });
+  composer.addEventListener("keydown", function (event) {
+    if (event.key === "Enter" && !event.shiftKey && !event.isComposing && !composing && event.keyCode !== 229) {
+      event.preventDefault();
+      if (!state.busy && !state.canStop) submit();
+    }
+  });
+  composer.addEventListener("blur", function () { if (draftTimer !== null) flushDraft(); });
+  byId("send").addEventListener("click", submit);
+  byId("attach").addEventListener("click", function () { send({ action: "attach" }); });
+  byId("empty-attach").addEventListener("click", function () { send({ action: "attach" }); });
+  byId("refresh").addEventListener("click", function () { send({ action: "refresh" }); });
+  byId("catalog-refresh").addEventListener("click", function () { send({ action: "refresh" }); });
+  byId("configure-connection").addEventListener("click", function () {
+    if (state.busy) return;
+    if (send({ action: "configureConnection" })) closePopover("settings", true);
+  });
+  byId("export-ifc").addEventListener("click", function () {
+    if (byId("export-ifc").disabled) return;
+    if (send({ action: "exportIfc", documentId: string(state.documentId) })) closePopover("settings", true);
+  });
+  byId("new-chat").addEventListener("click", function () {
+    const documentId = string(state.documentId);
+    if (send({ action: "clear", documentId: documentId }) && documentId === string(state.documentId)) {
+      cancelDraftSend();
+      composer.value = "";
+      lastHostDraft = "";
+      localDraft = true;
+      send({ action: "draft", text: "", documentId: documentId });
+      fitComposer();
+      refreshControls();
+    }
+  });
+  byId("continue").addEventListener("click", function () {
+    const documentId = string(state.documentId);
+    flushDraft();
+    if (documentId === string(state.documentId)) send({ action: "continue", documentId: documentId });
+  });
+  byId("accept").addEventListener("click", function () { send({ action: "accept" }); });
+  byId("settings-button").addEventListener("click", function () { togglePopover("settings"); });
+  byId("model-button").addEventListener("click", function () { togglePopover("model-picker"); });
+  byId("model-search").addEventListener("input", renderModels);
+  byId("model-picker").addEventListener("keydown", function (event) {
+    const options = Array.from(byId("model-list").querySelectorAll("button:not(:disabled)"));
+    const index = options.indexOf(document.activeElement);
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      const next = event.key === "ArrowDown" ? Math.min(index + 1, options.length - 1) : index < 0 ? options.length - 1 : Math.max(index - 1, 0);
+      if (options[next]) options[next].focus();
+    }
+    if (event.key === "Enter" && document.activeElement === byId("model-search") && options.length === 1) { event.preventDefault(); options[0].click(); }
+  });
+  byId("auto-tools").addEventListener("change", function () {
+    send({ action: "executionMode", autoTools: byId("auto-tools").checked, revision: state.executionModeRevision });
+  });
+  ["architectural", "detail"].forEach(function (id) {
+    byId(id).addEventListener("change", function () {
+      send({ action: "options", architectural: byId("architectural").checked, detail: byId("detail").value });
+    });
+  });
+  byId("width-cancel").addEventListener("click", closeWidth);
+  byId("width-form").addEventListener("submit", function (event) {
+    event.preventDefault();
+    if (byId("width-overlay").hidden || state.busy || !widthUnitsKey || widthInvalidated ||
+        widthDocumentId !== string(state.documentId) || widthUnitsKey !== string(state.unitsKey)) return;
+    const width = Number(byId("image-width").value);
+    if (!Number.isFinite(width) || width <= 0 || !byId("image-width").validity.valid) {
+      widthError("请输入大于 0 的有效实际宽度。");
+      byId("image-width").focus();
+      return;
+    }
+    if (send({ action: "importReference", id: widthReference, width: width, units: widthUnitsKey, documentId: widthDocumentId })) closeWidth();
+  });
+  byId("image-width").addEventListener("input", function () {
+    if (widthUnitsKey && !widthInvalidated && widthUnitsKey === string(state.unitsKey)) widthError("");
+  });
+  document.addEventListener("pointerdown", function (event) {
+    ["settings", "model-picker"].forEach(function (id) {
+      const trigger = byId(id === "settings" ? "settings-button" : "model-button");
+      if (!byId(id).hidden && !byId(id).contains(event.target) && !trigger.contains(event.target)) closePopover(id, false);
+    });
+  });
+  document.addEventListener("keydown", function (event) {
+    if (!byId("width-overlay").hidden) {
+      if (event.key === "Escape") { event.preventDefault(); closeWidth(); }
+      if (event.key === "Tab") {
+        const controls = Array.from(byId("width-overlay").querySelectorAll("input,button")).filter(function (control) { return !control.disabled; });
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (event.shiftKey && (document.activeElement === first || !byId("width-overlay").contains(document.activeElement))) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && (document.activeElement === last || !byId("width-overlay").contains(document.activeElement))) { event.preventDefault(); first.focus(); }
+      }
+      return;
+    }
+    if (event.key === "Escape") ["settings", "model-picker"].forEach(function (id) { if (!byId(id).hidden) closePopover(id, true); });
+  });
+  viewport.addEventListener("scroll", updateJump, { passive: true });
+  viewport.addEventListener("click", function (event) {
+    if (event.isTrusted && event.target.closest("summary")) pauseFollow();
+  }, true);
+  viewport.addEventListener("wheel", function (event) {
+    if (!event.isTrusted || event.ctrlKey || !event.deltaY) return;
+    const unit = event.deltaMode === 1 ? 20 : event.deltaMode === 2 ? viewport.clientHeight : 1;
+    scrollIntent(event.target, event.deltaY * unit);
+  }, { passive: true });
+  viewport.addEventListener("keydown", function (event) {
+    if (!event.isTrusted || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey ||
+        event.target.closest("input, textarea, select, button, [contenteditable]")) return;
+    if (event.key === " " && event.target.closest("summary")) return;
+    const page = viewport.clientHeight * .875;
+    const distances = { ArrowUp: -40, ArrowDown: 40, PageUp: -page, PageDown: page, Home: -Infinity, End: Infinity, " ": event.shiftKey ? -page : page };
+    if (Object.prototype.hasOwnProperty.call(distances, event.key)) scrollIntent(event.target, distances[event.key]);
+  });
+  viewport.addEventListener("touchstart", function (event) {
+    if (!event.isTrusted) return;
+    pauseFollow();
+    touchScrollY = event.touches.length === 1 ? event.touches[0].clientY : null;
+  }, { passive: true });
+  viewport.addEventListener("touchmove", function (event) {
+    if (!event.isTrusted || touchScrollY === null || event.touches.length !== 1) return;
+    const nextY = event.touches[0].clientY;
+    scrollIntent(event.target, touchScrollY - nextY);
+    touchScrollY = nextY;
+  }, { passive: true });
+  viewport.addEventListener("touchend", function () { touchScrollY = null; }, { passive: true });
+  viewport.addEventListener("touchcancel", function () { touchScrollY = null; }, { passive: true });
+  viewport.addEventListener("pointerdown", function (event) {
+    if (!event.isTrusted || event.pointerType !== "mouse" || event.button !== 0) return;
+    if (event.target.closest("pre, .message-text, .goal, .basis-note")) pauseFollow();
+    if (event.target !== viewport) return;
+    const bounds = viewport.getBoundingClientRect();
+    const contentLeft = bounds.left + viewport.clientLeft;
+    if (event.clientX >= contentLeft && event.clientX < contentLeft + viewport.clientWidth) return;
+    pauseFollow();
+    scrollDrag = { pointerId: event.pointerId, top: viewport.scrollTop, y: event.clientY };
+  });
+  document.addEventListener("pointerup", function (event) {
+    if (!scrollDrag || scrollDrag.pointerId !== event.pointerId) return;
+    if (event.isTrusted && event.clientY > scrollDrag.y && viewport.scrollTop > scrollDrag.top && nearBottom()) {
+      pinned = true;
+      followBottom();
+    }
+    scrollDrag = null;
+  });
+  document.addEventListener("pointercancel", function () { scrollDrag = null; });
+  byId("jump").addEventListener("click", function () { pinned = true; followBottom(); });
+  window.addEventListener("resize", function () { fitComposer(); if (pinned) followBottom(); else updateJump(); });
+  if (typeof ResizeObserver === "function") new ResizeObserver(function () { if (pinned) followBottom(); else updateJump(); }).observe(byId("viewport"));
+  refreshControls();
+  announceReady(20);
+}());
+</script>
+</body>
+</html>

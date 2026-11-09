@@ -1,0 +1,460 @@
+{
+  "schemaVersion": 1,
+  "sourceArtifactsFile": "source-artifacts.json",
+  "components": [
+    {
+      "name": "cpython",
+      "version": "3.12.13",
+      "licenseExpression": "Python-2.0",
+      "sourceIds": ["cpython", "python-build-standalone"],
+      "fingerprints": [
+        {"path": "python312.dll", "sha256": "f6ad19fa4d285626f583224699211cdbb28eae9d0fb5415bde94a117543105b7"}
+      ],
+      "archiveLicenses": [
+        {
+          "sourceId": "cpython",
+          "member": "Python-3.12.13/Doc/license.rst",
+          "sha256": "341832873fd316a37927e79385093fbbfd40a467428480835fe435a80cadf4e5"
+        },
+        {
+          "sourceId": "cpython",
+          "member": "Python-3.12.13/PC/crtlicense.txt",
+          "sha256": "3c71b3ae243121f6f227374cd1ef7c59ed07b1969b330d0e947f91a3a1b3fd73"
+        }
+      ],
+      "notes": [
+        "Private base BUILD is 20260510. python312.dll file and product versions are 3.12.13.",
+        "The actual base LICENSE.txt is copied separately, including historical Python and Microsoft/bzip2/Tcl notices.",
+        "The python-build-standalone 20260510 tag resolves to f0ae464f527498d6c4b13f19977447d603cd5edd. Build-recipe association is supported by BUILD and dependency versions but a complete binary rebuild was not performed."
+      ]
+    },
+    {
+      "name": "ifcopenshell",
+      "version": "0.9.0.post1",
+      "licenseExpression": "LGPL-3.0-or-later",
+      "sourceIds": ["ifcopenshell"],
+      "nativeVersion": "0.9.0post1+b5e509b",
+      "sourceRevision": "b5e509b223e1ab2c7eb4641211ea05209a2dfa3e",
+      "wheel": {
+        "filename": "ifcopenshell-0.9.0.post1-py312-none-win_amd64.whl",
+        "url": "https://files.pythonhosted.org/packages/c5/fb/97c538b094dad06191169b0edee6fdf8fdd87d98a9cb58c85535c8cb2e0c/ifcopenshell-0.9.0.post1-py312-none-win_amd64.whl",
+        "sha256": "290acc68c564b5393785deb67818191481181eda8c409c141fd37081fb3361f0",
+        "size": 42827327,
+        "status": "identified-from-pypi-metadata"
+      },
+      "fingerprints": [
+        {"path": "ifcopenshell-0.9.0.post1.dist-info/METADATA", "sha256": "82372212e7093fd7e43c490f2183d19a59ef4828375ef6c0d9f2d2c9d4b0355e"},
+        {"path": "ifcopenshell/_ifcopenshell_wrapper.cp312-win_amd64.pyd", "sha256": "77dae77f9ea9e67cd5679a5987d9759e6cf7c3f040bc8affeaf7a15a645cdcfc"},
+        {"path": "ifcopenshell/TKernel.dll", "sha256": "63ad0c85650765ffed7f880bb8844113425f9c53afb499cfe959be5c1509e2b0"},
+        {"path": "ifcopenshell/manifold.dll", "sha256": "e3cf9f11dd4f6a702b2ae279c538880f2c7ae98974a2a9ef2e16bcaa9ef5a320"},
+        {"path": "ifcopenshell/boost_container-vc143-mt-x64-1_92.dll", "sha256": "f36116f32b48174d01000136ca242c2b19fab8c5ffa316597e1d9496648458fd"}
+      ],
+      "archiveLicenses": [
+        {
+          "sourceId": "ifcopenshell",
+          "member": "IfcOpenShell-b5e509b223e1ab2c7eb4641211ea05209a2dfa3e/COPYING",
+          "sha256": "1b3782ccad7b8614100cda30d3faf42fc39f2e97932908c543005053b654ca68"
+        },
+        {
+          "sourceId": "ifcopenshell",
+          "member": "IfcOpenShell-b5e509b223e1ab2c7eb4641211ea05209a2dfa3e/COPYING.LESSER",
+          "sha256": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118"
+        }
+      ],
+      "nativePatterns": ["ifcopenshell/*.dll", "ifcopenshell/*.pyd"],
+      "notes": [
+        "The installed dist-info has no licence text or License-File declaration. COPYING and COPYING.LESSER are read verbatim from the acquired native-commit source archive.",
+        "The native wrapper version call was audited locally. The short revision resolved to the recorded full Git commit, whose tree supplied the submodule revisions.",
+        "The installed WHEEL says py3-none-any although the PyPI artifact filename is platform specific. The published wheel archive was identified from metadata. A byte-for-byte comparison of that archive against all installed files remains pending.",
+        "The LGPL declaration covers IfcOpenShell metadata. Bundled native and submodule terms are recorded individually below."
+      ]
+    },
+    {
+      "name": "isodate",
+      "version": "0.7.2",
+      "licenseExpression": "BSD-3-Clause",
+      "sourceIds": ["isodate"],
+      "fingerprints": [
+        {"path": "isodate-0.7.2.dist-info/METADATA", "sha256": "90bc9d1eee7c3c97fd3a52001dece07c0f9b480cfc8fbbf767ca4ae0ab848529"}
+      ]
+    },
+    {
+      "name": "lark",
+      "version": "1.3.1",
+      "licenseExpression": "MIT",
+      "sourceIds": ["lark"],
+      "fingerprints": [
+        {"path": "lark-1.3.1.dist-info/METADATA", "sha256": "730d3f056045a9096bc0a65e4faccae53fe7f3634055174d4b8245cd19cb4cde"}
+      ]
+    },
+    {
+      "name": "numpy",
+      "version": "2.5.4",
+      "licenseExpression": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0",
+      "sourceIds": ["numpy"],
+      "fingerprints": [
+        {"path": "numpy-2.5.4.dist-info/METADATA", "sha256": "e2b909d6a37d76c2bc130f528d7fed0c517322bce16dc7846b6a6df30e200403"},
+        {"path": "numpy.libs/libscipy_openblas64_-ed4f167a5330424524f45258e7ca2c8d.dll", "sha256": "ed4f167a5330424524f45258e7ca2c8d7f03c0cba1f30ee4985553ac1f88ecf8"}
+      ],
+      "nativePatterns": ["numpy/**/*.pyd", "numpy.libs/*.dll"],
+      "notes": [
+        "All 17 declared wheel licence files are collected, including the complete binary-distribution LICENSE.txt.",
+        "That binary notice additionally names OpenBLAS, LAPACK and the statically linked GCC runtime with GCC Runtime Library Exception 3.1. Preserve the complete notice."
+      ]
+    },
+    {
+      "name": "pyparsing",
+      "version": "3.3.3",
+      "licenseExpression": "MIT",
+      "sourceIds": ["pyparsing"],
+      "fingerprints": [
+        {"path": "pyparsing-3.3.3.dist-info/METADATA", "sha256": "f2ca34052d720622d300023472ef8ae94fe5b57d69acbb28a8667f6dd0e13497"}
+      ]
+    },
+    {
+      "name": "python-dateutil",
+      "version": "4.0.0",
+      "licenseExpression": "Apache-2.0 AND BSD-3-Clause",
+      "sourceIds": ["python-dateutil"],
+      "fingerprints": [
+        {"path": "python_dateutil-4.0.0.dist-info/METADATA", "sha256": "39adffb0c736bb6b6839f89fd158bb9b9ad54a3a795e0ea2ea53e79e1f821907"}
+      ],
+      "notes": [
+        "Metadata declares BSD-3-Clause. The actual LICENSE also applies Apache 2.0 to post-2017 contributions and preserves earlier BSD terms. The audited expression records both and the complete original text and AUTHORS.md are copied."
+      ]
+    },
+    {
+      "name": "shapely",
+      "version": "2.2.0",
+      "licenseExpression": "BSD-3-Clause",
+      "sourceIds": ["shapely"],
+      "fingerprints": [
+        {"path": "shapely-2.2.0.dist-info/METADATA", "sha256": "f4fef957712e3a9e731434b4213dc72fd80b116cbd49f50f0d956c2237efb203"},
+        {"path": "shapely.libs/geos-bf067cd6ff74ee0ad5f3ff52c7ef08c9.dll", "sha256": "0948bdb5c70b82e5055b55e9419b78d68372b1d0ec877277fa6e79276f6299b9"},
+        {"path": "shapely.libs/geos_c-6dd9fd915eef8a7928285416bef1e666.dll", "sha256": "6e65985b30831761887de3217853a720147626b18cb41668cd2bdc43d1bcded1"}
+      ],
+      "nativePatterns": ["shapely/*.pyd", "shapely.libs/*.dll"],
+      "notes": [
+        "LICENSE.txt, LICENSE_GEOS and LICENSE_win32 are collected separately. The latter two describe GEOS LGPL and Microsoft runtime distribution terms."
+      ]
+    },
+    {
+      "name": "typing-extensions",
+      "version": "4.16.0",
+      "licenseExpression": "PSF-2.0",
+      "sourceIds": ["typing-extensions"],
+      "fingerprints": [
+        {"path": "typing_extensions-4.16.0.dist-info/METADATA", "sha256": "b05084ca1d50879865178d9fff9fabeab61bdfb1f361bfbde95421ffc8f9be46"}
+      ]
+    },
+    {
+      "name": "tzdata",
+      "version": "2026.6",
+      "licenseExpression": "Apache-2.0",
+      "sourceIds": ["tzdata", "iana-tzdata"],
+      "fingerprints": [
+        {"path": "tzdata-2026.6.dist-info/METADATA", "sha256": "8173da8700dd125e60c9caf7663d02ee3318851ee60d387b2b080f23a74a86a8"}
+      ],
+      "archiveLicenses": [
+        {
+          "sourceId": "iana-tzdata",
+          "member": "LICENSE",
+          "sha256": "0613408568889f5739e5ae252b722a2659c02002839ad970a63dc5e9174b27cf"
+        }
+      ],
+      "notes": [
+        "The wheel's tzdata/__init__.py declares IANA_VERSION 2026f. The acquired IANA data archive supplies its public-domain notice separately from the Python wrapper's Apache licence."
+      ]
+    }
+  ],
+  "nativeComponents": [
+    {
+      "name": "opencascade",
+      "version": "7.8.1",
+      "versionEvidence": "TKernel.dll FileVersion and ProductVersion 7.8.1, consistent with the pinned IFC Windows recipe",
+      "licenseExpression": "LGPL-2.1-only WITH OCCT-exception-1.0",
+      "sourceIds": ["opencascade", "ifcopenshell"],
+      "binaryPatterns": ["ifcopenshell/TK*.dll"],
+      "archiveLicenses": [
+        {
+          "sourceId": "opencascade",
+          "member": "OCCT-7_8_1/LICENSE_LGPL_21.txt",
+          "sha256": "e237fa56668030e928551ddd60f05df5fe957f75eab874bbd017e085ed722e7c"
+        },
+        {
+          "sourceId": "opencascade",
+          "member": "OCCT-7_8_1/OCCT_LGPL_EXCEPTION.txt",
+          "sha256": "04580a884ea6cea294402649ff7b5cbb167d47462d1340a4ed33e550db10a81b"
+        }
+      ],
+      "notes": [
+        "The IFC recipe applies win/patches/V7_8_1.patch and other Windows layout changes. Retain those scripts and patches from the IFC source snapshot alongside the OCCT archive.",
+        "The upstream Windows CI consumes dependency caches from IfcOpenShell/build-outputs. Exact cache revision and build correspondence remain unresolved."
+      ]
+    },
+    {
+      "name": "boost",
+      "version": "1.92.0",
+      "versionEvidence": "boost_container-vc143-mt-x64-1_92.dll filename and pinned IFC recipe",
+      "licenseExpression": "BSL-1.0",
+      "sourceIds": ["boost-license"],
+      "upstreamSourceUrls": ["https://github.com/boostorg/boost/releases/tag/boost-1.92.0"],
+      "archiveLicenses": [
+        {"sourceId": "boost-license", "sha256": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566"}
+      ],
+      "notes": ["The acquired artifact is the actual Boost licence text. A complete Boost source distribution was not cached."]
+    },
+    {
+      "name": "cgal",
+      "version": "5.5.5",
+      "versionEvidence": "Candidate from the native-commit Windows recipe, exact cached build linkage unverified",
+      "licenseExpression": "GPL-3.0-or-later AND LGPL-3.0-or-later AND BSL-1.0",
+      "sourceIds": ["cgal", "ifcopenshell"],
+      "binaryPatterns": ["ifcopenshell/ifcopenshell_geometry_kernel_cgal.dll", "ifcopenshell/ifcopenshell_geometry_kernel_cgalsimple.dll"],
+      "archiveLicenses": [
+        {"sourceId": "cgal", "member": "cgal-5.5.5/Installation/LICENSE", "sha256": "2a4bbec98717c715c48b5e2fad5ad051b8e33c2b074e01547439f11410bd2adc"},
+        {"sourceId": "cgal", "member": "cgal-5.5.5/Installation/LICENSE.GPL", "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"},
+        {"sourceId": "cgal", "member": "cgal-5.5.5/Installation/LICENSE.LGPL", "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768"},
+        {"sourceId": "cgal", "member": "cgal-5.5.5/Installation/LICENSE.BSL", "sha256": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566"},
+        {"sourceId": "cgal", "member": "cgal-5.5.5/Installation/LICENSE.COMMERCIAL", "sha256": "efe84ac0bdfb270ca3abf0f5e0e547542da82baf9fec7fa85e2685352def0ef4"}
+      ],
+      "notes": [
+        "The acquired Nef_3/include/CGAL/Nef_polyhedron_3.h declares GPL-3.0-or-later OR LicenseRef-Commercial. Kernel DLLs are present even if an IFC export does not call them.",
+        "The commercial alternative is an upstream licensing option. The project has no recorded commercial CGAL licence. Review the exact included package terms and combined-work obligations before public release."
+      ]
+    },
+    {
+      "name": "mpir",
+      "version": null,
+      "candidateRevision": "5e0c2061af105c151970d41c8394ce956f77e455",
+      "licenseExpression": "LGPL-3.0-or-later",
+      "sourceIds": ["mpir"],
+      "archiveLicenses": [
+        {"sourceId": "mpir", "member": "mpir-5e0c2061af105c151970d41c8394ce956f77e455/COPYING", "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"},
+        {"sourceId": "mpir", "member": "mpir-5e0c2061af105c151970d41c8394ce956f77e455/COPYING.LIB", "sha256": "9ccf26cfe845e0eb8bb58053e47366e7ab6b697ae010f7650978d4b71b7d1fc1"}
+      ],
+      "notes": ["The IFC recipe pins this MPIR commit for CGAL arithmetic. No separate MPIR DLL import was found. Exact static linkage and any required relinking objects remain unresolved."]
+    },
+    {
+      "name": "mpfr",
+      "version": null,
+      "candidateRevision": "9f637c103431faa235f1aad7e35b639d3aa635ee",
+      "licenseExpression": "LGPL-3.0-or-later",
+      "sourceIds": ["mpfr"],
+      "archiveLicenses": [
+        {"sourceId": "mpfr", "member": "mpfr-9f637c103431faa235f1aad7e35b639d3aa635ee/COPYING", "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"},
+        {"sourceId": "mpfr", "member": "mpfr-9f637c103431faa235f1aad7e35b639d3aa635ee/COPYING.LESSER", "sha256": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118"}
+      ],
+      "notes": ["The IFC recipe uses the mutable Andrej730/mpfr ifcopenshell branch plus win/patches/mpfr.patch. The recorded revision is the branch head observed during this audit, and its relationship to the wheel build remains unresolved."]
+    },
+    {
+      "name": "manifold",
+      "version": "3.2.1",
+      "versionEvidence": "Candidate from the IFC Windows recipe, manifold.dll and its importing kernel DLL are present",
+      "licenseExpression": "Apache-2.0",
+      "sourceIds": ["manifold"],
+      "archiveLicenses": [
+        {"sourceId": "manifold", "member": "manifold-3.2.1/LICENSE", "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"}
+      ]
+    },
+    {
+      "name": "svgpp",
+      "version": "5f1870aa7b757718ff5f86bdfb55966fa4f217f9",
+      "versionEvidence": "Git submodule revision in the exact IFC source tree",
+      "licenseExpression": "BSL-1.0",
+      "sourceIds": ["svgpp"],
+      "archiveLicenses": [
+        {"sourceId": "svgpp", "member": "svgpp-5f1870aa7b757718ff5f86bdfb55966fa4f217f9/LICENSE_1_0.txt", "sha256": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566"}
+      ]
+    },
+    {
+      "name": "python-mvdxml",
+      "version": "83c12fa494b9d6a5a370d8525dc1f76aa5c89d8d",
+      "versionEvidence": "Git submodule revision in the exact IFC source tree, ifcopenshell/mvd is installed",
+      "licenseExpression": "LGPL-3.0-or-later",
+      "sourceIds": ["python-mvdxml"],
+      "archiveLicenses": [
+        {"sourceId": "python-mvdxml", "member": "python-mvdxml-83c12fa494b9d6a5a370d8525dc1f76aa5c89d8d/LICENSE", "sha256": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118"}
+      ],
+      "licenseReferences": ["ifcopenshell"]
+    },
+    {
+      "name": "simple-spf",
+      "version": "9400d243d880dace57490949d74ab1932ce99a09",
+      "versionEvidence": "Git submodule revision in the exact IFC source tree, ifcopenshell/simple_spf is installed",
+      "licenseExpression": "LGPL-2.1-only",
+      "sourceIds": ["simple-spf"],
+      "archiveLicenses": [
+        {"sourceId": "simple-spf", "member": "step-file-parser-9400d243d880dace57490949d74ab1932ce99a09/LICENSE", "sha256": "102900208eef27b766380135906d431dba87edaa7ec6aa72e6ebd3dd67f3a97b"}
+      ]
+    },
+    {
+      "name": "opencollada",
+      "version": "064a60b65c2c31b94f013820856bc84fb1937cc6",
+      "versionEvidence": "Candidate from the IFC Windows recipe, the DAE serializer DLL is present",
+      "licenseExpression": "MIT",
+      "sourceIds": ["opencollada"],
+      "archiveLicenses": [
+        {"sourceId": "opencollada", "member": "OpenCOLLADA-064a60b65c2c31b94f013820856bc84fb1937cc6/COLLADAStreamWriter/LICENSE", "sha256": "5e32d34ea250dcc3f1fcfffe534e35817394f8dbd4259a7f0e1d154c60ca2eaa"},
+        {"sourceId": "opencollada", "member": "OpenCOLLADA-064a60b65c2c31b94f013820856bc84fb1937cc6/Externals/LibXML/COPYING", "sha256": "013556ff1aa847ac0e365337321c200eee1c69051db8870db37002c852a4e98d"},
+        {"sourceId": "opencollada", "member": "OpenCOLLADA-064a60b65c2c31b94f013820856bc84fb1937cc6/Externals/expat/COPYING", "sha256": "f6eeb2310d0b00e5cecac39c73a0696a5bdbfb754b26325ed5a502fc1a6c338c"}
+      ],
+      "notes": ["This source snapshot also contains optional third-party modules. The exact statically linked selection in the published serializer remains unresolved."]
+    },
+    {
+      "name": "nlohmann-json",
+      "version": "3.6.1",
+      "versionEvidence": "Candidate single-header dependency from the IFC Windows recipe",
+      "licenseExpression": "MIT",
+      "sourceIds": ["json-license"],
+      "upstreamSourceUrls": ["https://github.com/nlohmann/json/releases/download/v3.6.1/json.hpp"],
+      "archiveLicenses": [
+        {"sourceId": "json-license", "sha256": "7400586ce89c6a2cc65f6ca46997da5d356a230673d3a211e040b783f23578a1"}
+      ]
+    },
+    {
+      "name": "eigen",
+      "version": "3.3.9",
+      "versionEvidence": "Candidate from the IFC Windows recipe",
+      "licenseExpression": "MPL-2.0",
+      "sources": [],
+      "upstreamSourceUrls": ["https://gitlab.com/libeigen/eigen/-/archive/3.3.9/eigen-3.3.9.tar.gz"],
+      "notes": ["GitLab source retrieval did not complete during the audit. Exact included Eigen source, copyright notices and any separately licensed modules remain a public-release blocker."]
+    },
+    {
+      "name": "geos",
+      "version": "3.14.1",
+      "versionEvidence": "shapely.geos_version_string observed locally",
+      "licenseExpression": "LGPL-2.1-only",
+      "sourceIds": ["geos"],
+      "archiveLicenses": [
+        {"sourceId": "geos", "member": "geos-3.14.1/COPYING", "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551"}
+      ],
+      "licenseReferences": ["shapely"],
+      "notes": ["The exact upstream 3.14.1 archive is acquired. Wheel build patches and reproducibility evidence remain to be reconciled with its binary pair."]
+    },
+    {
+      "name": "openblas-lapack-gcc-runtime",
+      "version": "0.3.34.106.0",
+      "versionEvidence": "numpy.__config__ build dependencies and bundled DLL filename, GCC compiler revision unresolved",
+      "licenseExpression": "BSD-3-Clause AND BSD-3-Clause-Open-MPI AND (GPL-3.0-or-later WITH GCC-exception-3.1)",
+      "sources": [],
+      "upstreamSourceUrls": ["https://github.com/OpenMathLib/OpenBLAS", "https://github.com/MacPython/scipy-openblas", "https://gcc.gnu.org/git/"],
+      "licenseReferences": ["numpy"],
+      "notes": ["The complete 45831-byte NumPy binary notice contains OpenBLAS, LAPACK, the GCC GPL text and runtime exception. Exact scipy-openblas and GCC build-source correspondence and exception applicability remain unresolved."]
+    },
+    {
+      "name": "cpython-inside-ifc-wheel",
+      "version": "3.12.1",
+      "versionEvidence": "ifcopenshell/python312.dll FileVersion and ProductVersion 3.12.1",
+      "licenseExpression": "Python-2.0",
+      "sourceIds": ["cpython-wheel-copy"],
+      "archiveLicenses": [
+        {"sourceId": "cpython-wheel-copy", "member": "Python-3.12.1/LICENSE", "sha256": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf"}
+      ],
+      "notes": ["This is a distinct bundled DLL with sha256 0cc4e557972488eb99ea4aeb3d29f3ade974ef3bcd47c211911489a189a0b6f2. The runtime builder owns the DLL-loading and duplicate-interpreter review."]
+    },
+    {
+      "name": "openssl",
+      "version": "3.5.6",
+      "versionEvidence": "ssl.OPENSSL_VERSION and libcrypto DLL FileVersion observed locally",
+      "licenseExpression": "Apache-2.0",
+      "sourceIds": ["python-build-standalone"],
+      "upstreamSourceUrls": ["https://github.com/openssl/openssl/releases/download/openssl-3.5.6/openssl-3.5.6.tar.gz"],
+      "archiveLicenses": [
+        {"sourceId": "python-build-standalone", "member": "python-build-standalone-f0ae464f527498d6c4b13f19977447d603cd5edd/LICENSE.openssl-3.txt", "sha256": "7d5450cb2d142651b8afa315b5f238efc805dad827d91ba367d8516bc9d49e7a"}
+      ],
+      "notes": ["The exact build-recipe source records the OpenSSL archive as 53121812 bytes and sha256 deae7c80cba99c4b4f940ecadb3c3338b13cb77418409238e57d7f31f2a3b736. That OpenSSL source archive was identified and has not been cached."]
+    },
+    {
+      "name": "libffi",
+      "version": null,
+      "licenseExpression": "MIT",
+      "sourceIds": ["python-build-standalone"],
+      "archiveLicenses": [
+        {"sourceId": "python-build-standalone", "member": "python-build-standalone-f0ae464f527498d6c4b13f19977447d603cd5edd/LICENSE.libffi.txt", "sha256": "deaf3a42effb551a5b140fa9afefed183a27f1341c6d1bf430d106a5e6931fc0"}
+      ],
+      "notes": ["The base ships libffi-8.dll. The build recipe contains a 3.4.2 Windows comment and a 3.4.6 download record. Exact DLL source version remains unresolved."]
+    },
+    {
+      "name": "sqlite",
+      "version": "3.50.4",
+      "versionEvidence": "sqlite3.sqlite_version and DLL file version 3.50.4.0 observed locally",
+      "licenseExpression": "LicenseRef-SQLite-Public-Domain",
+      "sourceIds": ["python-build-standalone"],
+      "upstreamSourceUrls": ["https://www.sqlite.org/2025/sqlite-autoconf-3500400.tar.gz"],
+      "archiveLicenses": [
+        {"sourceId": "python-build-standalone", "member": "python-build-standalone-f0ae464f527498d6c4b13f19977447d603cd5edd/LICENSE.sqlite.txt", "sha256": "38bef3d28b24f145ea293bd3b6eb4b20396982abc8303128fb493986ea5bc719"}
+      ]
+    },
+    {
+      "name": "xz-liblzma",
+      "version": "5.8.1",
+      "versionEvidence": "Candidate from the base build-recipe download record, compiled version unverified",
+      "licenseExpression": "0BSD",
+      "sourceIds": ["python-build-standalone"],
+      "archiveLicenses": [
+        {"sourceId": "python-build-standalone", "member": "python-build-standalone-f0ae464f527498d6c4b13f19977447d603cd5edd/LICENSE.liblzma.txt", "sha256": "9a4062de0a2c388a98cf35a35d348b62fa97c838a71c3c28ee1a2d7d0a565b02"}
+      ]
+    },
+    {
+      "name": "expat",
+      "version": "2.7.4",
+      "versionEvidence": "pyexpat.EXPAT_VERSION observed locally",
+      "licenseExpression": "MIT",
+      "sourceIds": ["python-build-standalone", "cpython"],
+      "archiveLicenses": [
+        {"sourceId": "python-build-standalone", "member": "python-build-standalone-f0ae464f527498d6c4b13f19977447d603cd5edd/LICENSE.expat.txt", "sha256": "122f2c27000472a201d337b9b31f7eb2b52d091b02857061a8880371612d9534"}
+      ],
+      "notes": ["The standalone generic download dictionary names Expat 2.6.3 while the Windows runtime reports 2.7.4. Retained CPython source and build-recipe notices require reconciliation with the exact Windows-vendored Expat sources."]
+    },
+    {
+      "name": "zlib",
+      "version": "1.3.1",
+      "versionEvidence": "zlib.ZLIB_RUNTIME_VERSION observed locally",
+      "licenseExpression": "Zlib",
+      "sourceIds": ["python-build-standalone"],
+      "archiveLicenses": [
+        {"sourceId": "python-build-standalone", "member": "python-build-standalone-f0ae464f527498d6c4b13f19977447d603cd5edd/LICENSE.zlib.txt", "sha256": "818922b2620f12801a12bf78e399644a30990e66824abd8ca8ec24d451d6f92c"}
+      ]
+    },
+    {
+      "name": "bzip2",
+      "version": "1.0.8",
+      "versionEvidence": "Base LICENSE.txt and standalone build recipe",
+      "licenseExpression": "bzip2-1.0.6",
+      "sourceIds": ["python-build-standalone"],
+      "archiveLicenses": [
+        {"sourceId": "python-build-standalone", "member": "python-build-standalone-f0ae464f527498d6c4b13f19977447d603cd5edd/LICENSE.bzip2.txt", "sha256": "1f38bbc7caacafd65169276d759c0d88c991b753b643ce35d0e45ea1971dd441"}
+      ]
+    },
+    {
+      "name": "mpdecimal",
+      "version": null,
+      "licenseExpression": "BSD-2-Clause",
+      "sourceIds": ["python-build-standalone", "cpython"],
+      "archiveLicenses": [
+        {"sourceId": "python-build-standalone", "member": "python-build-standalone-f0ae464f527498d6c4b13f19977447d603cd5edd/LICENSE.mpdecimal.txt", "sha256": "669512af7219f58be03a398766d7c9da11a3b3df9d3f05cb74c5ceca25c8da3b"}
+      ]
+    },
+    {
+      "name": "microsoft-vc-runtime",
+      "version": null,
+      "licenseExpression": "LicenseRef-Microsoft-Visual-C-Runtime",
+      "sources": [],
+      "licenseReferences": ["cpython", "shapely"],
+      "notes": ["The private Python base includes vcruntime140.dll and vcruntime140_1.dll. NumPy and Shapely also bundle renamed msvcp140 DLLs. The app-local msvcp140.dll is an unchanged copy of the signed, pinned Shapely wheel binary, SHA-256 0fa7eb792d3fbcf2233e4ea47e9144b9b1309ba8ed5d4731a72fffa8f4f556d6; the offline probe requires loading this app-local file. Retain the actual Python Microsoft notice and Shapely LICENSE_win32. Applicable toolchain redistribution entitlement and current terms require owner review."]
+    }
+  ],
+  "releaseBlockers": [
+    "Reconcile the exact published Windows wheel with the installed binary hashes and upstream Windows dependency-cache revision. IfcOpenShell/build-outputs is consumed by upstream CI with a secret token, and the exact source/build relationship of that cache is unestablished.",
+    "Review the bundled CGAL GPL/commercial package terms and their consequences for distribution of the kernel DLLs and combined work. The installed wheel contains both CGAL kernels.",
+    "Establish exact MPIR/MPFR static linkage, matching source and patches, and any LGPL relinking/object-file requirements. The MPFR recipe uses a mutable branch.",
+    "Complete Eigen source and notice acquisition and the linked-component inventory of OpenCOLLADA, Manifold, SVG++, OCCT and optional native serializer dependencies.",
+    "Reconcile the private CPython base with its complete Windows build and dependency sources, including libffi and Expat version differences. Review the extra CPython 3.12.1 DLL shipped inside the IFC wheel.",
+    "Reconcile exact GEOS wheel build material and the scipy-openblas/GCC source revisions and GCC Runtime Library Exception applicability.",
+    "Review the dateutil metadata/text licence discrepancy and Microsoft runtime redistribution terms with the applicable toolchain entitlement.",
+    "Select, prepare and verify an owner-approved corresponding-source delivery method for each relevant component, including required patches, build scripts and replacement/relinking information. Acquired archives currently remain in the build cache and must be made available through the chosen distribution method before release.",
+    "Document the product's applicable LGPL notices, modification and reverse-engineering permissions, and any required installation information. Preserve externally replaceable Python modules and native DLLs and a user-regenerable runtime manifest."
+  ]
+}

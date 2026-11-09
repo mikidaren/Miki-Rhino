@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Version>0.1.0</Version>
+    <Title>Miki-Rhino</Title>
+    <Product>Miki-Rhino</Product>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <AssemblyName>MikiRhino.Plugin</AssemblyName>
+    <RootNamespace>MikiRhino.Plugin</RootNamespace>
+    <TargetExt>.rhp</TargetExt>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../RhinoMagpie.Agent/RhinoMagpie.Agent.csproj" />
+    <ProjectReference Include="../../vendor/openbim/src/Miki.OpenBim.Rhino/Miki.OpenBim.Rhino.csproj" />
+    <PackageReference Include="RhinoCommon" Version="9.0.26132.12305-wip" ExcludeAssets="runtime" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Web/panel.html" />
+    <Content Include="../../vendor/openbim/python/*.py" Link="openbim/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../vendor/openbim/python/requirements.txt" Link="openbim/requirements.txt" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../vendor/openbim/snapshot.json" Link="openbim/snapshot.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../vendor/openbim/LICENSE" Link="openbim/LICENSE" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

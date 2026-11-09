@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "id": "TWO-STOREY",
+  "name": "Two-storey architectural concept",
+  "revision": 0,
+  "units": "m",
+  "levels": [
+    { "id": "L1", "elevation": 0, "height": 3.2 },
+    { "id": "L2", "elevation": 3.2, "height": 3.2 }
+  ],
+  "grids": [
+    { "id": "GRID-A", "start": [0, 0], "end": [0, 8] },
+    { "id": "GRID-B", "start": [6, 0], "end": [6, 8] },
+    { "id": "GRID-C", "start": [12, 0], "end": [12, 8] },
+    { "id": "GRID-1", "start": [0, 0], "end": [12, 0] },
+    { "id": "GRID-2", "start": [0, 4], "end": [12, 4] },
+    { "id": "GRID-3", "start": [0, 8], "end": [12, 8] }
+  ],
+  "spaces": [
+    { "id": "ROOM-L1-S", "level": "L1", "name": "Living zone", "boundary": [[0.24, 0.24], [5.8, 0.24], [5.8, 2.2], [0.24, 2.2]] },
+    { "id": "ROOM-L1-N", "level": "L1", "name": "Studio zone", "boundary": [[0.24, 4.12], [11.76, 4.12], [11.76, 7.76], [0.24, 7.76]] },
+    { "id": "ROOM-L2-S", "level": "L2", "name": "Bedroom zone", "boundary": [[0.24, 0.24], [5.8, 0.24], [5.8, 2.2], [0.24, 2.2]] },
+    { "id": "ROOM-L2-N", "level": "L2", "name": "Study zone", "boundary": [[0.24, 4.12], [11.76, 4.12], [11.76, 7.76], [0.24, 7.76]] }
+  ],
+  "walls": [
+    { "id": "WALL-L1-S", "level": "L1", "start": [0, 0], "end": [12, 0], "thickness": 0.24 },
+    { "id": "WALL-L1-E", "level": "L1", "start": [12, 0], "end": [12, 8], "thickness": 0.24 },
+    { "id": "WALL-L1-N", "level": "L1", "start": [12, 8], "end": [0, 8], "thickness": 0.24 },
+    { "id": "WALL-L1-W", "level": "L1", "start": [0, 8], "end": [0, 0], "thickness": 0.24 },
+    { "id": "WALL-L2-S", "level": "L2", "start": [0, 0], "end": [12, 0], "thickness": 0.24 },
+    { "id": "WALL-L2-E", "level": "L2", "start": [12, 0], "end": [12, 8], "thickness": 0.24 },
+    { "id": "WALL-L2-N", "level": "L2", "start": [12, 8], "end": [0, 8], "thickness": 0.24 },
+    { "id": "WALL-L2-W", "level": "L2", "start": [0, 8], "end": [0, 0], "thickness": 0.24 },
+    { "id": "WALL-L1-P", "level": "L1", "start": [0, 4], "end": [12, 4], "thickness": 0.24 },
+    { "id": "WALL-L2-P", "level": "L2", "start": [0, 4], "end": [12, 4], "thickness": 0.24 }
+  ],
+  "slabs": [
+    { "id": "SLAB-L1", "level": "L1", "boundary": [[0, 0], [12, 0], [12, 8], [0, 8]], "thickness": 0.2, "offset": 0, "voids": [] },
+    { "id": "SLAB-L2", "level": "L2", "boundary": [[0, 0], [12, 0], [12, 8], [0, 8]], "thickness": 0.2, "offset": 0,
+      "voids": [[[3.1, 2.4], [8, 2.4], [8, 3.7], [3.1, 3.7]]] }
+  ],
+  "types": [
+    { "id": "WIN-A", "kind": "window", "form": "rectangular", "width": 1.2, "height": 1.4, "depth": 0.12 },
+    { "id": "WIN-B", "kind": "window", "form": "rectangular", "width": 0.8, "height": 1, "depth": 0.12 },
+    { "id": "DOOR-A", "kind": "door", "form": "rectangular", "width": 0.9, "height": 2.1, "depth": 0.12 }
+  ],
+  "openings": [
+    { "id": "WIN-L1-1", "wall": "WALL-L1-S", "type": "WIN-A", "offset": 1.5, "sill": 0.9 },
+    { "id": "WIN-L1-2", "wall": "WALL-L1-S", "type": "WIN-A", "offset": 4.5, "sill": 0.9 },
+    { "id": "WIN-L2-1", "wall": "WALL-L2-S", "type": "WIN-A", "offset": 1.5, "sill": 0.9 },
+    { "id": "WIN-L2-2", "wall": "WALL-L2-S", "type": "WIN-A", "offset": 4.5, "sill": 0.9 },
+    { "id": "WIN-L1-B", "wall": "WALL-L1-N", "type": "WIN-B", "offset": 2, "sill": 1 },
+    { "id": "WIN-L2-B", "wall": "WALL-L2-N", "type": "WIN-B", "offset": 2, "sill": 1 },
+    { "id": "DOOR-L1", "wall": "WALL-L1-S", "type": "DOOR-A", "offset": 9.5, "sill": 0 },
+    { "id": "DOOR-L1-P", "wall": "WALL-L1-P", "type": "DOOR-A", "offset": 8.5, "sill": 0 },
+    { "id": "DOOR-L2-P", "wall": "WALL-L2-P", "type": "DOOR-A", "offset": 8.5, "sill": 0 }
+  ],
+  "stairs": [
+    { "id": "STAIR-L1-L2", "from": "L1", "to": "L2", "origin": [3.2, 2.5], "direction": [1, 0], "width": 1.1, "run": 4.8, "risers": 18 }
+  ]
+}

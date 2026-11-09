@@ -1,0 +1,61 @@
+name: Source tests and managed build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-source:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    env:
+      ContinuousIntegrationBuild: "true"
+      DOTNET_NOLOGO: "true"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Restore locked dependencies from public NuGet
+        run: |
+          foreach ($project in @(
+            'tests/Connection.Tests/Connection.Tests.csproj',
+            'tests/Agent.Tests/Agent.Tests.csproj',
+            'tests/Workflow.Tests/Workflow.Tests.csproj',
+            'src/RhinoMagpie.Plugin/RhinoMagpie.Plugin.csproj'
+          )) {
+            dotnet restore $project --configfile NuGet.Config --locked-mode -p:NuGetAudit=false
+            if ($LASTEXITCODE -ne 0) { throw "Restore failed for $project" }
+          }
+      - name: Connection and modeling regressions
+        run: |
+          foreach ($suite in @('Connection.Tests', 'Agent.Tests', 'Workflow.Tests')) {
+            dotnet run --project "tests/$suite/$suite.csproj" --no-restore -c Release
+            if ($LASTEXITCODE -ne 0) { throw "Tests failed for $suite" }
+          }
+      - name: Prepare pinned browser test dependencies
+        run: |
+          $testRoot = Join-Path $env:RUNNER_TEMP 'miki-browser-tests'
+          npm install --no-save --prefix $testRoot playwright@1.60.0
+          if ($LASTEXITCODE -ne 0) { throw 'Playwright dependency setup failed.' }
+          $playwright = Join-Path $testRoot 'node_modules/playwright'
+          node (Join-Path $playwright 'cli.js') install chromium
+          if ($LASTEXITCODE -ne 0) { throw 'Chromium setup failed.' }
+          Add-Content -LiteralPath $env:GITHUB_ENV -Value ("PANEL_SCROLL_PLAYWRIGHT=" + $playwright)
+      - name: Identity, native-entry coexistence and browser regressions
+        run: node --test tests/identity.test.mjs tests/openbim-snapshot.test.mjs tests/browser/*.test.mjs
+      - name: Rebuild managed candidate and inspect debug paths
+        run: ./scripts/build-local.ps1

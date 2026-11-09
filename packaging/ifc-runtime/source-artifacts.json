@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "artifacts": {
+    "ifcopenshell": {
+      "cacheFile": "ifcopenshell-b5e509b223e1ab2c7eb4641211ea05209a2dfa3e.tar.gz",
+      "url": "https://codeload.github.com/IfcOpenShell/IfcOpenShell/tar.gz/b5e509b223e1ab2c7eb4641211ea05209a2dfa3e",
+      "sha256": "9cd664dfe790be1aec2ef59c95004692a0774e2217e0ee3e96a173ae2f0d08c1",
+      "size": 136968032,
+      "status": "acquired",
+      "kind": "source-archive",
+      "revision": "b5e509b223e1ab2c7eb4641211ea05209a2dfa3e"
+    },
+    "cpython": {
+      "cacheFile": "Python-3.12.13.tar.xz",
+      "url": "https://www.python.org/ftp/python/3.12.13/Python-3.12.13.tar.xz",
+      "sha256": "c08bc65a81971c1dd5783182826503369466c7e67374d1646519adf05207b684",
+      "size": 20801708,
+      "status": "acquired",
+      "kind": "source-archive"
+    },
+    "cpython-wheel-copy": {
+      "cacheFile": "Python-3.12.1.tar.xz",
+      "url": "https://www.python.org/ftp/python/3.12.1/Python-3.12.1.tar.xz",
+      "sha256": "8dfb8f426fcd226657f9e2bd5f1e96e53264965176fa17d32658e873591aeb21",
+      "size": 20583448,
+      "status": "acquired",
+      "kind": "source-archive"
+    },
+    "python-build-standalone": {
+      "cacheFile": "python-build-standalone-20260510.tar.gz",
+      "url": "https://codeload.github.com/astral-sh/python-build-standalone/tar.gz/f0ae464f527498d6c4b13f19977447d603cd5edd",
+      "sha256": "47db35a39364102579b19d1d36de793bba0c127b92899d8652c9a0b6347ed0e0",
+      "size": 519327,
+      "status": "acquired",
+      "kind": "build-recipe-source",
+      "revision": "f0ae464f527498d6c4b13f19977447d603cd5edd"
+    },
+    "opencascade": {
+      "cacheFile": "occt-V7_8_1.tar.gz",
+      "url": "https://codeload.github.com/Open-Cascade-SAS/OCCT/tar.gz/refs/tags/V7_8_1",
+      "sha256": "7321af48c34dc253bf8aae3f0430e8cb10976961d534d8509e72516978aa82f5",
+      "size": 48432051,
+      "status": "acquired",
+      "kind": "source-archive"
+    },
+    "cgal": {
+      "cacheFile": "cgal-v5.5.5.tar.gz",
+      "url": "https://codeload.github.com/CGAL/cgal/tar.gz/refs/tags/v5.5.5",
+      "sha256": "f0111bae01633f5386e2b731fb48d559c85522adb7b55db6bbe72d1fbc463363",
+      "size": 132404477,
+      "status": "acquired",
+      "kind": "source-archive"
+    },
+    "manifold": {
+      "cacheFile": "manifold-v3.2.1.tar.gz",
+      "url": "https://codeload.github.com/elalish/manifold/tar.gz/refs/tags/v3.2.1",
+      "sha256": "c2fddb0f4b2289caff660b29677883f0324415a9901f8f2aed4c83851f994c13",
+      "size": 29616071,
+      "status": "acquired",
+      "kind": "source-archive"
+    },
+    "geos": {
+      "cacheFile": "geos-3.14.1.tar.bz2",
+      "url": "https://download.osgeo.org/geos/geos-3.14.1.tar.bz2",
+      "sha256": "3c20919cda9a505db07b5216baa980bacdaa0702da715b43f176fb07eff7e716",
+      "size": 7013834,
+      "status": "acquired",
+      "kind": "source-archive"
+    },
+    "mpir": {
+      "cacheFile": "mpir-5e0c2061af105c151970d41c8394ce956f77e455.tar.gz",
+      "url": "https://codeload.github.com/BrianGladman/mpir/tar.gz/5e0c2061af105c151970d41c8394ce956f77e455",
+      "sha256": "32ec060c3f26d37f2bd169898795327db5e73ab047a731179c7b2fe3d27312e9",
+      "size": 3999116,
+      "status": "acquired",
+      "kind": "candidate-dependency-source",
+      "revision": "5e0c2061af105c151970d41c8394ce956f77e455"
+    },
+    "mpfr": {
+      "cacheFile": "mpfr-9f637c103431faa235f1aad7e35b639d3aa635ee.tar.gz",
+      "url": "https://codeload.github.com/Andrej730/mpfr/tar.gz/9f637c103431faa235f1aad7e35b639d3aa635ee",
+      "sha256": "9a78aab8f1c89bd5780ed75e857aa082a3229ba804d358a7e454cee61677f1bb",
+      "size": 3348387,
+      "status": "acquired",
+      "kind": "candidate-dependency-source",
+      "revision": "9f637c103431faa235f1aad7e35b639d3aa635ee"
+    },
+    "svgpp": {
+      "cacheFile": "svgpp-5f1870aa7b757718ff5f86bdfb55966fa4f217f9.tar.gz",
+      "url": "https://codeload.github.com/svgpp/svgpp/tar.gz/5f1870aa7b757718ff5f86bdfb55966fa4f217f9",
+      "sha256": "8e2c501019a7a89d6227cd769f944807f52b03a2c681a9a0cc094b2cccdaf6af",
+      "size": 3084432,
+      "status": "acquired",
+      "kind": "submodule-source",
+      "revision": "5f1870aa7b757718ff5f86bdfb55966fa4f217f9"
+    },
+    "python-mvdxml": {
+      "cacheFile": "python-mvdxml-83c12fa494b9d6a5a370d8525dc1f76aa5c89d8d.tar.gz",
+      "url": "https://codeload.github.com/opensourceBIM/python-mvdxml/tar.gz/83c12fa494b9d6a5a370d8525dc1f76aa5c89d8d",
+      "sha256": "3a332aae707967e609dcab44a118a88ec270c551e7222eb53fc8ba809e9e7a0d",
+      "size": 132652,
+      "status": "acquired",
+      "kind": "submodule-source",
+      "revision": "83c12fa494b9d6a5a370d8525dc1f76aa5c89d8d"
+    },
+    "simple-spf": {
+      "cacheFile": "step-file-parser-9400d243d880dace57490949d74ab1932ce99a09.tar.gz",
+      "url": "https://codeload.github.com/IfcOpenShell/step-file-parser/tar.gz/9400d243d880dace57490949d74ab1932ce99a09",
+      "sha256": "db5331988f1fb2889e1c11b4ba017408bb90df68ddec7a42afb3a93e8102fd37",
+      "size": 23283,
+      "status": "acquired",
+      "kind": "submodule-source",
+      "revision": "9400d243d880dace57490949d74ab1932ce99a09"
+    },
+    "opencollada": {
+      "cacheFile": "OpenCOLLADA-064a60b65c2c31b94f013820856bc84fb1937cc6.tar.gz",
+      "url": "https://codeload.github.com/KhronosGroup/OpenCOLLADA/tar.gz/064a60b65c2c31b94f013820856bc84fb1937cc6",
+      "sha256": "bc15d4512bf9126279e320301c54f7105e0f9959220273b8cc1f364bfc569e7b",
+      "size": 11804293,
+      "status": "acquired",
+      "kind": "candidate-dependency-source",
+      "revision": "064a60b65c2c31b94f013820856bc84fb1937cc6"
+    },
+    "boost-license": {
+      "cacheFile": "boost-1.92.0-LICENSE_1_0.txt",
+      "url": "https://raw.githubusercontent.com/boostorg/boost/boost-1.92.0/LICENSE_1_0.txt",
+      "sha256": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566",
+      "size": 1338,
+      "status": "acquired",
+      "kind": "license-text"
+    },
+    "json-license": {
+      "cacheFile": "json-3.6.1-LICENSE.MIT",
+      "url": "https://raw.githubusercontent.com/nlohmann/json/v3.6.1/LICENSE.MIT",
+      "sha256": "7400586ce89c6a2cc65f6ca46997da5d356a230673d3a211e040b783f23578a1",
+      "size": 1076,
+      "status": "acquired",
+      "kind": "license-text"
+    },
+    "iana-tzdata": {
+      "cacheFile": "tzdata2026f.tar.gz",
+      "url": "https://data.iana.org/time-zones/releases/tzdata2026f.tar.gz",
+      "sha256": "01b4a91cec5167ed48c11e8ab78f2048cead78ce94b0cafcad0ae8c5a3044d3d",
+      "size": 483310,
+      "status": "acquired",
+      "kind": "data-source-archive"
+    },
+    "isodate": {
+      "cacheFile": "isodate-0.7.2.tar.gz",
+      "url": "https://files.pythonhosted.org/packages/54/4d/e940025e2ce31a8ce1202635910747e5a87cc3a6a6bb2d00973375014749/isodate-0.7.2.tar.gz",
+      "sha256": "4cd1aa0f43ca76f4a6c6c0292a85f40b35ec2e43e315b59f06e6d32171a953e6",
+      "size": 29705,
+      "status": "acquired",
+      "kind": "source-distribution"
+    },
+    "lark": {
+      "cacheFile": "lark-1.3.1.tar.gz",
+      "url": "https://files.pythonhosted.org/packages/da/34/28fff3ab31ccff1fd4f6c7c7b0ceb2b6968d8ea4950663eadcb5720591a0/lark-1.3.1.tar.gz",
+      "sha256": "b426a7a6d6d53189d318f2b6236ab5d6429eaf09259f1ca33eb716eed10d2905",
+      "size": 382732,
+      "status": "acquired",
+      "kind": "source-distribution"
+    },
+    "numpy": {
+      "cacheFile": "numpy-2.5.4.tar.gz",
+      "url": "https://files.pythonhosted.org/packages/95/b0/c7453d0b6e2073c3264468b106ee1563750cecc910965e67357e3698c83e/numpy-2.5.4.tar.gz",
+      "sha256": "9a94cf751c9ad8ebaa835bcd3d40dacf8534ad086b88c38029b65123c7999d2a",
+      "size": 20866315,
+      "status": "acquired",
+      "kind": "source-distribution"
+    },
+    "pyparsing": {
+      "cacheFile": "pyparsing-3.3.3.tar.gz",
+      "url": "https://files.pythonhosted.org/packages/e4/11/b213bebff182584360cb8d17c72c1677fec5c5c228de439e63bcf8ab1c8f/pyparsing-3.3.3.tar.gz",
+      "sha256": "928ae7e20211f3b6f3915a72f06a0cfd29ab9d24279dd6346b6b1a7146397d36",
+      "size": 1050487,
+      "status": "acquired",
+      "kind": "source-distribution"
+    },
+    "python-dateutil": {
+      "cacheFile": "python_dateutil-4.0.0.tar.gz",
+      "url": "https://files.pythonhosted.org/packages/18/39/b3927f3616f6223832f9b760e4208e8a7c7e1dea2b4d9ad7d32a5d214c3a/python_dateutil-4.0.0.tar.gz",
+      "sha256": "d7295ff14fdc0f92f662100bfb6c551d160ca090f2939f1ec5b9794265c03f06",
+      "size": 250419,
+      "status": "acquired",
+      "kind": "source-distribution"
+    },
+    "shapely": {
+      "cacheFile": "shapely-2.2.0.tar.gz",
+      "url": "https://files.pythonhosted.org/packages/f3/ab/924b6e202f796d270a3041a230151f7908db5ea48c74effe6f8023e9bd05/shapely-2.2.0.tar.gz",
+      "sha256": "e8865e553d874a1ec4a032057ea81fca9def37b188cd8fb550af3b3480b3f88c",
+      "size": 380326,
+      "status": "acquired",
+      "kind": "source-distribution"
+    },
+    "typing-extensions": {
+      "cacheFile": "typing_extensions-4.16.0.tar.gz",
+      "url": "https://files.pythonhosted.org/packages/f6/cc/6253133b5bb138fc3306cebfbda2c520f545d36b5be2c7255cc528bb45d6/typing_extensions-4.16.0.tar.gz",
+      "sha256": "dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5",
+      "size": 113555,
+      "status": "acquired",
+      "kind": "source-distribution"
+    },
+    "tzdata": {
+      "cacheFile": "tzdata-2026.6.tar.gz",
+      "url": "https://files.pythonhosted.org/packages/7a/29/6a1391d31cd00ff9e927215a224a880e1e84e826b64ba80a499e51c074d8/tzdata-2026.6.tar.gz",
+      "sha256": "85d2cd9c09f81f0bb29db27759fc83af4f1e620efb814f8c5bf8b4cc4feece6d",
+      "size": 201017,
+      "status": "acquired",
+      "kind": "source-distribution"
+    }
+  }
+}

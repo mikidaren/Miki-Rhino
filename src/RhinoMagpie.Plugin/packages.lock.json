@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net8.0-windows7.0": {
+      "RhinoCommon": {
+        "type": "Direct",
+        "requested": "[9.0.26132.12305-wip, )",
+        "resolved": "9.0.26132.12305-wip",
+        "contentHash": "9nD0TuH2J0YbwTKjMxZJR2UqdjyImJBDwH6qnP9WvYSKU+Y+aM8PLpEgJvLYmFh8EpSP29Q/ISq3EOPTrJL1vQ==",
+        "dependencies": {
+          "System.Drawing.Common": "8.0.0"
+        }
+      },
+      "Microsoft.Win32.SystemEvents": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "9opKRyOKMCi2xJ7Bj7kxtZ1r9vbzosMvRrdEhVhDz8j8MoBGgB+WmC94yH839NPH+BclAjtQ/pyagvi/8gDLkw=="
+      },
+      "System.Drawing.Common": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "JkbHJjtI/dWc5dfmEdJlbe3VwgZqCkZRtfuWFh5GOv0f+gGCfBtzMpIVkmdkj2AObO9y+oiOi81UGwH3aBYuqA==",
+        "dependencies": {
+          "Microsoft.Win32.SystemEvents": "8.0.0"
+        }
+      },
+      "MikiRhino.Agent": {
+        "type": "Project"
+      },
+      "MikiRhino.OpenBim": {
+        "type": "Project"
+      },
+      "MikiRhino.OpenBim.Rhino": {
+        "type": "Project",
+        "dependencies": {
+          "MikiRhino.OpenBim": "[1.0.0, )",
+          "RhinoCommon": "[9.0.26132.12305-wip, )"
+        }
+      }
+    }
+  }
+}

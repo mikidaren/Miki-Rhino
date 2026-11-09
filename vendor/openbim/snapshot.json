@@ -1,0 +1,65 @@
+{
+  "files": [
+    {
+      "path": "src/Miki.OpenBim/BuildingProject.cs",
+      "sha256": "5a3651b869be58ecbf19f6bf3ea64eebbfdc783d2af3268c7feab3dad666a6b4"
+    },
+    {
+      "path": "src/Miki.OpenBim/Miki.OpenBim.csproj",
+      "sha256": "93b4a33fb8635ab14301a685a5c41dcd16690eb6433e2883b459e5f95bec44b7"
+    },
+    {
+      "path": "src/Miki.OpenBim/PlanGeometry.cs",
+      "sha256": "f47d62803563a304f55e843820ebf170550b632349c1533730ea5665bac2d3ec"
+    },
+    {
+      "path": "src/Miki.OpenBim/ProjectEngine.cs",
+      "sha256": "f65c287e58cd1c4bccf44453ced86e6a05eccb92b3bf18a40d05a9bb00fef4d4"
+    },
+    {
+      "path": "src/Miki.OpenBim/ProjectEngine.Demo.cs",
+      "sha256": "754fbb706749d819913d35b22b8968321116d26510133ba3f035ea87eda3e3bc"
+    },
+    {
+      "path": "src/Miki.OpenBim/ProjectValidation.cs",
+      "sha256": "5c5b014b6685e89b98b31bfe1615e4131357ddb79ecd9279eb87d453ed7ad700"
+    },
+    {
+      "path": "src/Miki.OpenBim.Rhino/Miki.OpenBim.Rhino.csproj",
+      "sha256": "dd44eee29f6975481c3c5124dacbf0b3089b37a3562900383b68a6976b32473a"
+    },
+    {
+      "path": "src/Miki.OpenBim.Rhino/NativeGeometry.cs",
+      "sha256": "7dd1c1e51b3e08abe4fb9e66898576140fa46dca5921c21dea2c37365b884ac1"
+    },
+    {
+      "path": "src/Miki.OpenBim.Rhino/RhinoModel.cs",
+      "sha256": "5cf8f48c8d439322a094da63f7d7b0a3ce675fcb5a48ba41b8fceff15c78f025"
+    },
+    {
+      "path": "python/miki_ifc.py",
+      "sha256": "40baac01b8867d1c1d08f9808e9d6221a7651fde27301418b64a1ddc02a4ee40"
+    },
+    {
+      "path": "python/requirements.txt",
+      "sha256": "0efc42c2bdeb4feba44e245e47f8a01254b6a712f7065908b65a7f16975ad3db"
+    },
+    {
+      "path": "examples/two-storey.json",
+      "sha256": "5baaeb52c34f07efe9998b0ec3ce1ff3d9819d4a480a82199853c0dbe689aad8"
+    }
+  ],
+  "repository": "https://github.com/mikidaren/Miki-GrasshopperWarehouse",
+  "sourceCommit": "5cdd4205c43d2dff6fe12d9aca530c1256f3e891",
+  "contract": 1,
+  "localAdjustments": [
+    {
+      "path": "src/Miki.OpenBim/Miki.OpenBim.csproj",
+      "reason": "Distinct Miki-Rhino assembly identity for side-by-side installation."
+    },
+    {
+      "path": "src/Miki.OpenBim.Rhino/Miki.OpenBim.Rhino.csproj",
+      "reason": "Distinct Miki-Rhino assembly identity for side-by-side installation."
+    }
+  ]
+}
