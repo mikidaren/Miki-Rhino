@@ -63,8 +63,8 @@ jobs:
         run: |
           $yak = Join-Path $env:RUNNER_TEMP 'yak.exe'
           Invoke-WebRequest 'https://files.mcneel.com/yak/tools/0.19.1/win-x64/yak.exe' -OutFile $yak
-          $signature = Get-AuthenticodeSignature -FilePath $yak
-          if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'ROBERT MCNEEL & ASSOCIATES') { throw 'The Yak builder signature is not valid.' }
+          $expectedYakSha256 = '656221a1e887a702191b9811a477517d02b5f663be2cc6528f5e0c815da37d12'
+          if ((Get-FileHash -LiteralPath $yak -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expectedYakSha256) { throw 'The pinned Yak builder hash does not match.' }
           ./scripts/build-preview.ps1 -YakPath $yak
           $preview = Get-ChildItem dist/preview/release/*/*-preview-win-x64.zip
           if (@($preview).Count -ne 1) { throw 'Expected one preview ZIP.' }
