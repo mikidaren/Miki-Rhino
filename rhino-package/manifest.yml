@@ -1,10 +1,11 @@
 name: miki-rhino
-version: 0.1.0
+version: 0.1.1
 authors:
   - mikidaren
 description: >
   Miki-Rhino independent modeling panel for Rhino 9 on Windows.
   Uses an explicitly configured OpenAI-compatible API endpoint and model.
+  This preview does not include the IFC runtime or support IFC export.
 keywords:
   - ai
   - mcp

@@ -14,8 +14,12 @@ public sealed class OpenBimTools(RhinoDoc document) : ILocalModelingTools
     private readonly uint documentSerial = document.RuntimeSerialNumber;
 
     private static string PluginDirectory => Path.GetDirectoryName(typeof(OpenBimTools).Assembly.Location)!;
+    // Package contents change only on reinstall. Full integrity is checked again at export.
+    public static bool IfcRuntimeAvailable { get; } = IfcRuntimeBundle.IsPresent(PluginDirectory);
 
-    public JsonArray ListTools() => JsonNode.Parse("""
+    public JsonArray ListTools()
+    {
+        var tools = JsonNode.Parse("""
         [
           {"name":"openbim_catalog","description":"Inspect the local reusable lightweight BIM toolkit or one project's parameters. Request only the needed topic. No materials or construction-junction specifications are required. All source lengths are metres.","inputSchema":{"type":"object","properties":{"topic":{"type":"string","enum":["tools","template","project","levels","grids","spaces","walls","slabs","types","openings","stairs"]}},"additionalProperties":false},"annotations":{"readOnlyHint":true}},
           {"name":"openbim_apply","description":"Build exact native geometry or patch the current lightweight BIM project using the installed reusable toolkit. Supply exactly one of project, patch, or explicit template='two-storey'. Patches require expectedRevision from inspection. Shared type edits update matching Blocks and real host openings; floor edits affect dependent parts only. Do not use the demo template unless the user requests that example.","inputSchema":{"type":"object","properties":{"project":{"type":"object"},"patch":{"type":"object"},"template":{"type":"string","enum":["two-storey"]},"expectedRevision":{"type":"integer","minimum":0}},"additionalProperties":false},"annotations":{"readOnlyHint":false}},
@@ -23,6 +27,13 @@ public sealed class OpenBimTools(RhinoDoc document) : ILocalModelingTools
           {"name":"openbim_export_ifc","description":"Export the synchronized current BIM project to a user-requested absolute .ifc path, reopen with IfcOpenShell and verify semantics and actual geometry. Uses the bundled offline runtime; no external Python or setup is needed. Never overwrites an existing file. Export is not a modeling repair.","inputSchema":{"type":"object","properties":{"path":{"type":"string"}},"required":["path"],"additionalProperties":false},"annotations":{"readOnlyHint":false}}
         ]
         """)!.AsArray();
+        if (!IfcRuntimeAvailable)
+        {
+            var export = tools.First(item => item?["name"]?.GetValue<string>() == "openbim_export_ifc");
+            tools.Remove(export);
+        }
+        return tools;
+    }
 
     public async Task<JsonObject> CallToolAsync(string name, JsonObject arguments, CancellationToken token)
     {
@@ -56,11 +67,11 @@ public sealed class OpenBimTools(RhinoDoc document) : ILocalModelingTools
             return new JsonObject
             {
                 ["library"] = "Miki-GrasshopperWarehouse", ["contract"] = 1, ["units"] = "m",
-                ["capabilities"] = "plan axes/spaces; straight walls with through-openings; rectangular shared door/window Blocks; slabs with voids; straight conceptual stairs; scoped patches; IFC4 export/readback",
+                ["capabilities"] = "plan axes/spaces; straight walls with through-openings; rectangular shared door/window Blocks; slabs with voids; straight conceptual stairs; scoped patches" + (IfcRuntimeAvailable ? "; IFC4 export/readback" : ""),
                 ["parameters"] = "No materials, wall build-ups or connection details required. Query topic=template or a collection name for its schema.",
                 ["source"] = "https://github.com/mikidaren/Miki-GrasshopperWarehouse",
-                ["ifcRuntimeConfigured"] = IfcRuntimeBundle.IsPresent(PluginDirectory),
-                ["ifcRuntime"] = "bundled-offline",
+                ["ifcRuntimeConfigured"] = IfcRuntimeAvailable,
+                ["ifcRuntime"] = IfcRuntimeAvailable ? "bundled-offline" : "unavailable",
             };
         if (topic == "template")
             return new JsonObject { ["template"] = "two-storey", ["sizeM"] = "12 x 8", ["storeys"] = 2,

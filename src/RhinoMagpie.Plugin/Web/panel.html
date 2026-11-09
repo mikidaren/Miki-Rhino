@@ -1123,7 +1123,7 @@ select {
     <label class="setting"><span class="setting-copy">YOLO 自动执行<small>免逐次工具确认，跨对话和重启记住选择；尺度假设仍会询问</small></span><input type="checkbox" id="auto-tools"></label>
     <label class="setting"><span class="setting-copy">建筑模式<small>先确认图纸与尺度，再分阶段建模</small></span><input type="checkbox" id="architectural" checked></label>
     <label class="setting" for="detail"><span>目标精细度</span><select id="detail"><option value="concept">概念</option><option value="developed" selected>深化</option><option value="detailed">详细</option></select></label>
-    <div class="setting"><span class="setting-copy">本地 IFC 导出<small>选择保存位置并读回验证</small></span><button class="secondary" id="export-ifc" type="button" disabled>导出 IFC</button></div>
+    <div class="setting"><span class="setting-copy">本地 IFC 导出<small id="ifc-status">正在检查 IFC 组件…</small></span><button class="secondary" id="export-ifc" type="button" disabled>导出 IFC</button></div>
   </section>
   <section class="popover model-popover" id="model-picker" aria-label="选择模型" hidden>
     <label class="sr-only" for="model-search">搜索模型名称或 ID</label><input class="search" id="model-search" type="search" placeholder="搜索模型名称或 ID…" autocomplete="off">
@@ -1150,7 +1150,7 @@ select {
   const byId = function (id) { return document.getElementById(id); };
   const viewport = byId("viewport");
   const composer = byId("draft");
-  const state = { documentId: "", document: "", units: "", unitsKey: "", status: "", endpoint: "", configuredModel: "", busy: false, canSend: false, canStop: false, draft: "", autoTools: false, executionModeRevision: 0, architectural: true, detail: "developed", models: [], catalogLoading: false, catalogError: "", selectedModel: "", messages: [], references: [], plan: null };
+  const state = { documentId: "", document: "", units: "", unitsKey: "", status: "", endpoint: "", configuredModel: "", ifcRuntimeAvailable: false, busy: false, canSend: false, canStop: false, draft: "", autoTools: false, executionModeRevision: 0, architectural: true, detail: "developed", models: [], catalogLoading: false, catalogError: "", selectedModel: "", messages: [], references: [], plan: null };
   const messageNodes = new Map();
   const stepNodes = new Map();
   const referenceNodes = new Map();
@@ -1275,7 +1275,8 @@ select {
     byId("catalog-refresh").disabled = Boolean(state.busy);
     byId("configure-connection").disabled = Boolean(state.busy);
     byId("export-ifc").disabled = Boolean(state.busy || state.canStop || state.catalogLoading) ||
-      !string(state.documentId) || string(state.documentId) === "0";
+      !state.ifcRuntimeAvailable || !string(state.documentId) || string(state.documentId) === "0";
+    text(byId("ifc-status"), state.ifcRuntimeAvailable ? "选择保存位置并读回验证" : "IFC 组件未内置或无法读取，暂不可用");
     const catalog = state.models.filter(function (model) { return model && model.id; });
     text(byId("catalog-status"), state.catalogLoading ? "正在获取所选服务的模型列表…" :
       state.catalogError || (catalog.length ? catalog.length + " 个模型 ID" : "尚未加载列表，可使用手动配置的模型 ID"));

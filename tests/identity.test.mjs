@@ -51,7 +51,7 @@ test("public restores use nuget.org while cache-only operation is explicitly opt
   assert.ok(documentation.includes("完整自动组列表"));
 });
 
-test("public CI restores pinned dependencies and runs source checks without distributing IFC binaries", () => {
+test("public CI tests and packages an IFC-free preview", () => {
   assert.ok(existsSync(new URL("../.github/workflows/source-ci.yml", import.meta.url)), "public source CI must exist");
   const workflow = read(".github/workflows/source-ci.yml");
   assert.ok(workflow.includes("windows-latest"));
@@ -61,6 +61,7 @@ test("public CI restores pinned dependencies and runs source checks without dist
   for (const suite of ["Connection.Tests", "Agent.Tests", "Workflow.Tests"]) assert.ok(workflow.includes(suite));
   assert.ok(workflow.includes("tests/browser/*.test.mjs"));
   assert.ok(workflow.includes("scripts/build-local.ps1"));
-  assert.ok(!workflow.includes("upload-artifact"));
+  assert.ok(workflow.includes("scripts/build-preview.ps1"));
+  assert.ok(workflow.includes("actions/upload-artifact@v4"));
   assert.ok(!workflow.includes("-IfcRuntimePath"));
 });

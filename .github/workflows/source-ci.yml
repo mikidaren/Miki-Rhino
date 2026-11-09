@@ -59,3 +59,18 @@ jobs:
         run: node --test tests/identity.test.mjs tests/openbim-snapshot.test.mjs tests/browser/*.test.mjs
       - name: Rebuild managed candidate and inspect debug paths
         run: ./scripts/build-local.ps1
+      - name: Build IFC-free preview package
+        run: |
+          $yak = Join-Path $env:RUNNER_TEMP 'yak.exe'
+          Invoke-WebRequest 'https://files.mcneel.com/yak/tools/0.19.1/win-x64/yak.exe' -OutFile $yak
+          $signature = Get-AuthenticodeSignature -FilePath $yak
+          if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'ROBERT MCNEEL & ASSOCIATES') { throw 'The Yak builder signature is not valid.' }
+          ./scripts/build-preview.ps1 -YakPath $yak
+          $preview = Get-ChildItem dist/preview/release/*/*-preview-win-x64.zip
+          if (@($preview).Count -ne 1) { throw 'Expected one preview ZIP.' }
+          ./tests/preview-installer.test.ps1 -PreviewZip $preview.FullName
+      - uses: actions/upload-artifact@v4
+        with:
+          name: miki-rhino-preview-win-x64
+          path: dist/preview/release/*/*
+          if-no-files-found: error

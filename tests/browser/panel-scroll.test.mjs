@@ -14,7 +14,8 @@ async function settle(page) {
 }
 
 async function fixture(run) {
-  const browser = await chromium.launch({ headless: true, ignoreDefaultArgs: ["--hide-scrollbars"] });
+  const browser = await chromium.launch({ headless: true, ignoreDefaultArgs: ["--hide-scrollbars"],
+    ...(process.env.PANEL_TEST_CHROMIUM_EXECUTABLE ? { executablePath: process.env.PANEL_TEST_CHROMIUM_EXECUTABLE } : {}) });
   try {
     const page = await browser.newPage({ viewport: { width: 480, height: 760 } });
     await page.addInitScript(() => { window.magpiePreviewSend = () => {}; });
@@ -27,7 +28,7 @@ async function fixture(run) {
         { id: "tool", type: "tool", text: "Streaming tool", state: "running", detail }
       ];
       window.magpie.applyState({
-        documentId: "scroll-fixture", messages: window.fixtureMessages,
+        documentId: "scroll-fixture", messages: window.fixtureMessages, ifcRuntimeAvailable: true,
         models: [{ id: "test/model", label: "Test model" }], selectedModel: "test/model", canSend: true
       });
     }, lines);
@@ -407,6 +408,23 @@ test("Miki describes provider-returned IDs without promising Magpie routing disc
   }));
   await page.locator("#model-button").click();
   assert.equal(await page.locator("#catalog-status").textContent(), "1 个模型 ID");
+}));
+
+test("an installation without IFC runtime explains the unavailable export and never dispatches it", async () => fixture(async page => {
+  await page.evaluate(() => {
+    window.sentActions = [];
+    window.magpiePreviewSend = action => window.sentActions.push(action);
+    window.magpie.applyState({ ifcRuntimeAvailable: false, busy: false, canStop: false, catalogLoading: false });
+  });
+  await page.locator("#settings-button").click();
+  const button = page.getByRole("button", { name: "导出 IFC", exact: true });
+  assert.equal(await button.isDisabled(), true);
+  assert.match(await page.locator("#ifc-status").textContent(), /未内置|不可用/);
+  await button.evaluate(node => node.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+  assert.deepEqual(await page.evaluate(() => window.sentActions), []);
+  await page.evaluate(() => window.magpie.applyState({ ifcRuntimeAvailable: true }));
+  assert.equal(await button.isEnabled(), true);
+  assert.match(await page.locator("#ifc-status").textContent(), /读回验证/);
 }));
 
 test("offline IFC export dispatches without a model or send permission after catalog failure", async () => fixture(async page => {

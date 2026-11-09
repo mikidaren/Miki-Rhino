@@ -1,6 +1,8 @@
 param([string]$IfcRuntimePath, [switch]$Offline)
 $ErrorActionPreference = 'Stop'
 $repository = [IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))
+$version = ((Select-String -LiteralPath (Join-Path $repository 'rhino-package/manifest.yml') -Pattern '^version:\s*(.+)$').Matches.Groups[1].Value).Trim()
+if (!$version) { throw 'Package version is missing.' }
 $stagingRoot = Join-Path $repository 'dist/local'
 $stage = [IO.Path]::GetFullPath((Join-Path $stagingRoot ([guid]::NewGuid().ToString('N'))))
 if (!$stage.StartsWith([IO.Path]::GetFullPath($stagingRoot) + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Unexpected local build directory.' }
@@ -37,8 +39,8 @@ if ($IfcRuntimePath) {
 Copy-Item -LiteralPath (Join-Path $repository 'README.md'), (Join-Path $repository 'LICENSE') -Destination $stage
 Copy-Item -LiteralPath (Join-Path $repository 'rhino-package/manifest.yml') -Destination (Join-Path $stage 'manifest.yml')
 $hashes = @($binaries | ForEach-Object { @{file=[IO.Path]::GetFileName($_); sha256=(Get-FileHash -LiteralPath $_ -Algorithm SHA256).Hash.ToLowerInvariant()} })
-@{product='Miki-Rhino'; version='0.1.0'; localBuild=$true; managedDebugPathsVerified=$true; runtimeIncluded=[bool]$IfcRuntimePath; binaries=$hashes} |
+@{product='Miki-Rhino'; version=$version; localBuild=$true; managedDebugPathsVerified=$true; runtimeIncluded=[bool]$IfcRuntimePath; binaries=$hashes} |
     ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $stage 'BUILD_REPORT.json') -Encoding utf8NoBOM
-@{directory=[IO.Path]::GetRelativePath($repository, $stage); product='Miki-Rhino'; version='0.1.0'} |
+@{directory=[IO.Path]::GetRelativePath($repository, $stage); product='Miki-Rhino'; version=$version} |
     ConvertTo-Json | Set-Content -LiteralPath (Join-Path $repository 'dist/LATEST_BUILD.json') -Encoding utf8NoBOM
 Write-Output ('MIKI_BUILD_DIRECTORY=' + $stage)

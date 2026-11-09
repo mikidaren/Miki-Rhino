@@ -452,6 +452,12 @@ public sealed class MagpiePanel : Panel
     internal async Task ExportIfcAsync(string? path = null)
     {
         if (disposed || IsBusy) return;
+        if (!OpenBimTools.IfcRuntimeAvailable)
+        {
+            status.Text = "IFC 组件未内置或无法读取，当前版本暂不可导出。";
+            PublishState();
+            return;
+        }
         var doc = RhinoDoc.ActiveDoc;
         uint serial = documentSerial;
         if (doc is null || doc.RuntimeSerialNumber != serial ||
@@ -775,6 +781,7 @@ public sealed class MagpiePanel : Panel
             status = status.Text,
             endpoint = configuredEndpoint,
             configuredModel,
+            ifcRuntimeAvailable = OpenBimTools.IfcRuntimeAvailable,
             busy = running is not null || refreshing is not null,
             canSend = send.Enabled,
             canStop = stop.Enabled,

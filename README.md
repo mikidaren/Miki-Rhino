@@ -1,6 +1,10 @@
 # Miki-Rhino
 
-独立的 Rhino 9 Windows AI 建模工作区，基于 Magpie-Rhino 0.4.1 开发候选派生。`SOURCE_SNAPSHOT.json` 记录基础源码的版本和 SHA-256。项目源码公开；包含 IFC 运行环境的完整安装包仍在核对第三方源码和分发许可，尚未公开发行。
+独立的 Rhino 9 Windows AI 建模工作区，基于 Magpie-Rhino 0.4.1 开发候选派生。`SOURCE_SNAPSHOT.json` 记录基础源码的版本和 SHA-256。
+
+**0.1.1 预览版不包含 IFC 运行库，不能导出 IFC。** 它提供独立模型连接、Rhino AI 菜单入口和轻量建筑建模工具；包含离线 IFC 运行环境的完整安装包仍在核对第三方源码和分发条件，尚未公开发行。不要用该预览版覆盖已安装的本地完整 IFC 测试版。
+
+下载预览版时，从本仓库 Releases 获取 `Miki-Rhino-0.1.1-preview-win-x64.zip`。保存工作并关闭 Rhino，解压后在 PowerShell 中运行 `./install-preview.ps1`；脚本会校验安装文件，并拒绝默认覆盖带 IFC 的本机完整测试版。重新打开 Rhino，在 AI 代理菜单选择 **Miki-Rhino**。它与 Magpie-Rhino 使用独立插件身份；使用前在「模型连接」填写服务地址、模型和密钥。
 
 ## 使用路径
 
@@ -12,7 +16,7 @@
 
 用户可手动填写 Magpie 暴露的本地兼容端点，并自行提供密钥、模型 ID 或该服务接受的 group ID。界面只展示这个端点实际返回的 `/models` 条目。当前独立版尚未实现 Magpie Agent 连接协议、端点或凭据自动发现，也不保证完整自动组列表、自定义组与策略同步。原 Magpie-Rhino 工程继续独立维护，其原生 Magpie 连接流程由原工程提供。
 
-IFC 操作沿用独立 Python 进程及 `-I -S -B`。设置中的「导出 IFC」使用原生保存对话框调用本地工具。若另一 Rhino 操作正在记录撤销，Miki-Rhino 等待该操作结束后再导出。
+若完整离线 IFC 运行库存在，IFC 操作使用独立 Python 进程及 `-I -S -B`，设置中的「导出 IFC」使用原生保存对话框并读回验证。**公开预览版没有此运行库，界面禁用导出，AI 也不会收到该工具。** 若另一 Rhino 操作正在记录撤销，Miki-Rhino 等待该操作结束后再导出。
 
 ## 身份隔离
 
@@ -41,7 +45,9 @@ IFC 操作沿用独立 Python 进程及 `-I -S -B`。设置中的「导出 IFC�
 
 连接测试运行 `dotnet run --project tests/Connection.Tests`。Agent、Workflow 回归分别位于 `tests/Agent.Tests`、`tests/Workflow.Tests`。浏览器测试运行 `node --test tests/browser/*.test.mjs`，可通过 `PANEL_SCROLL_PLAYWRIGHT` 指向已有 Playwright 包。
 
-`.github/workflows/source-ci.yml` 在 Windows 上配置 .NET 8 与 Node 24，通过公开 NuGet 按锁文件恢复，运行连接、建模、界面和入口共存回归，再构建并检查托管程序集。公开 CI 验证源码与托管构建，不上传尚待审核的 IFC 二进制。本地缓存模式由 `-Offline` 单独选择。
+`.github/workflows/source-ci.yml` 在 Windows 上配置 .NET 8 与 Node 24，通过公开 NuGet 按锁文件恢复，运行连接、建模、界面和入口共存回归，再自动构建不含 IFC 的预览 Yak 和 ZIP。完整 IFC 二进制不会上传。本地缓存模式由 `-Offline` 单独选择。
+
+`scripts/build-preview.ps1 -YakPath <Rhino 9 Yak.exe>` 从固定文件清单构建不含 IFC 运行库的预览 Yak，并验证包内文件清单。发布构建要求干净且可识别的 Git 提交；`-AllowDirty` 只用于本地试验。
 
 ## 原生兼容性与验证边界
 

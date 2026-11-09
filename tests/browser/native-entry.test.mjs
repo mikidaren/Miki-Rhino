@@ -17,7 +17,8 @@ async function inject(page, name, url = urls[name]) {
 }
 
 async function fixture(run) {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true,
+    ...(process.env.PANEL_TEST_CHROMIUM_EXECUTABLE ? { executablePath: process.env.PANEL_TEST_CHROMIUM_EXECUTABLE } : {}) });
   try {
     const page = await browser.newPage();
     await page.setContent('<header class="header"><button class="agent-chip" aria-expanded="true">Native agent</button></header><div class="popover" role="menu"><div class="menu-sep"></div></div><button class="send">Send</button>');
