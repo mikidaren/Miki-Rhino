@@ -128,7 +128,7 @@ for (int attempt = 0; attempt < 2; attempt++)
 }
 Check(brokenHandler.ChatRequests.Count == 1, "blocked session cannot dispatch a retry or another model request");
 
-foreach (string failure in new[] { "invalid-json", "wrong-id", "http-error" })
+foreach (string failure in new[] { "invalid-json", "wrong-id", "http-error", "write-body-disconnect" })
 {
     var protocolHandler = new FixtureHandler { ToolFailure = failure };
     using var protocolHttp = new HttpClient(protocolHandler);
@@ -142,8 +142,24 @@ foreach (string failure in new[] { "invalid-json", "wrong-id", "http-error" })
     }
     catch (UnconfirmedToolException)
     {
-        Check(protocolSession.ToolCompletionUnknown && protocolHandler.Executed.Count == 1,
+        Check(protocolSession.ToolCompletionUnknown && protocolHandler.Executed.Count == (failure == "write-body-disconnect" ? 2 : 1),
             failure + " blocks further tools when completion is unknown");
+        if (failure == "write-body-disconnect")
+        {
+            int modelRequests = protocolHandler.ChatRequests.Count;
+            try
+            {
+                await protocolSession.RunAsync("Retry write", fixtureConfig, new MagpieGateway(protocolHttp),
+                    new RhinoMcpClient(protocolHttp, new Uri("http://localhost:10500/agent")),
+                    (_, _) => Task.FromResult(true), (_, _) => Task.FromResult(""), (_, _) => { }, CancellationToken.None);
+                throw new Exception("An unconfirmed write was allowed to retry.");
+            }
+            catch (UnconfirmedToolException)
+            {
+                Check(protocolHandler.Executed.Count == 2 && protocolHandler.ChatRequests.Count == modelRequests,
+                    "write whose response disconnected cannot be sent again");
+            }
+        }
     }
 }
 
@@ -268,6 +284,7 @@ finally
 }
 passed += IfcRuntimeTests.Run();
 passed += IfcDiagnosticTests.Run();
+passed += await McpTransportTests.RunAsync();
 Console.WriteLine($"{passed} agent checks passed");
 
 sealed class FixtureHandler : HttpMessageHandler
@@ -333,12 +350,21 @@ sealed class FixtureHandler : HttpMessageHandler
             if (ToolFailure == "invalid-json")
                 return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{invalid") };
             if (ToolFailure == "wrong-id")
-                return Response(new JsonObject { ["id"] = 999999, ["result"] = new JsonObject() });
+                return Response(new JsonObject { ["jsonrpc"] = "2.0", ["id"] = 999999, ["result"] = new JsonObject() });
             if (ToolFailure == "http-error")
                 return new HttpResponseMessage(HttpStatusCode.BadGateway);
+            if (ToolFailure == "write-body-disconnect" && name == "run_python")
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StreamContent(new DisconnectedBody())
+                    {
+                        Headers = { ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/event-stream") },
+                    },
+                };
             if (ToolFailure == "rpc-error")
                 return Response(new JsonObject
                 {
+                    ["jsonrpc"] = "2.0",
                     ["id"] = body["id"]!.DeepClone(),
                     ["error"] = new JsonObject { ["code"] = -32602, ["message"] = "Refused before execution" },
                 });
@@ -360,4 +386,10 @@ sealed class FixtureHandler : HttpMessageHandler
     {
         Content = JsonContent.Create(body),
     };
+
+    private sealed class DisconnectedBody : MemoryStream
+    {
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) =>
+            ValueTask.FromException<int>(new HttpIOException(HttpRequestError.ResponseEnded, "Connection ended while reading tool output."));
+    }
 }

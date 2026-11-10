@@ -46,7 +46,7 @@ public sealed class MagpiePanel : Panel
     {
         Timeout = TimeSpan.FromMinutes(10),
     };
-    private readonly HttpClient mcpHttp = new(new HttpClientHandler { AllowAutoRedirect = false })
+    private readonly HttpClient mcpHttp = new(new HttpClientHandler { AllowAutoRedirect = false, UseProxy = false })
     {
         Timeout = Timeout.InfiniteTimeSpan,
     };

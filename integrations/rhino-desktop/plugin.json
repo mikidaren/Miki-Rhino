@@ -1,0 +1,33 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "miki-rhino",
+  "version": "0.2.0",
+  "description": "Inspect selection, viewport and objects in a locally running Rhino 9 document.",
+  "author": {
+    "name": "mikidaren",
+    "url": "https://github.com/mikidaren"
+  },
+  "homepage": "https://github.com/mikidaren/Miki-Rhino",
+  "repository": "https://github.com/mikidaren/Miki-Rhino",
+  "license": "MIT",
+  "extensions": {
+    "com.openai": {
+      "requires_local_executor": true,
+      "interface": {
+        "displayName": "Miki-Rhino",
+        "shortDescription": "Inspect a local Rhino 9 document",
+        "longDescription": "Read selection, viewport summary and a bounded list of objects from an open Rhino 9 document on Windows.",
+        "developerName": "mikidaren",
+        "category": "Productivity",
+        "capabilities": [
+          "Read"
+        ],
+        "websiteURL": "https://github.com/mikidaren/Miki-Rhino",
+        "defaultPrompt": [
+          "Summarize the current Rhino selection and object counts.",
+          "List up to 20 curves in the connected Rhino document."
+        ]
+      }
+    }
+  }
+}
