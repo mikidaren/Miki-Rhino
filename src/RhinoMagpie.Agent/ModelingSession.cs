@@ -306,7 +306,7 @@ public sealed class ModelingSession
                                         throw;
                                     }
                                     catch (OperationCanceledException) when (readOnly && token.IsCancellationRequested) { throw; }
-                                    catch (Exception error) when (error is HttpRequestException or OperationCanceledException ||
+                                    catch (Exception error) when (error is HttpRequestException or IOException or OperationCanceledException ||
                                         !isLocal && error is JsonException or InvalidOperationException)
                                     {
                                         ToolCompletionUnknown = true;
