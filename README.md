@@ -2,9 +2,11 @@
 
 独立的 Rhino 9 Windows AI 建模工作区，基于 Magpie-Rhino 0.4.1 开发候选派生。`SOURCE_SNAPSHOT.json` 记录基础源码的版本和 SHA-256。
 
-**0.1.1 预览版不包含 IFC 运行库，不能导出 IFC。** 它提供独立模型连接、Rhino AI 菜单入口和轻量建筑建模工具；包含离线 IFC 运行环境的完整安装包仍在核对第三方源码和分发条件，尚未公开发行。不要用该预览版覆盖已安装的本地完整 IFC 测试版。
+**0.2.0 预览版不包含 IFC 运行库，不能导出 IFC。** 它提供独立模型连接、Rhino AI 菜单入口和轻量建筑建模工具。不要用该预览版覆盖已安装的本地完整 IFC 测试版。
 
-下载预览版时，从本仓库 Releases 获取 `Miki-Rhino-0.1.1-preview-win-x64.zip`。保存工作并关闭 Rhino，解压后在 PowerShell 中运行 `./install-preview.ps1`；脚本会校验安装文件，并拒绝默认覆盖带 IFC 的本机完整测试版。重新打开 Rhino，在 AI 代理菜单选择 **Miki-Rhino**。它与 Magpie-Rhino 使用独立插件身份；使用前在「模型连接」填写服务地址、模型和密钥。
+下载预览版时，从本仓库 Releases 获取 `Miki-Rhino-0.2.0-preview-win-x64.zip`。保存工作并关闭 Rhino，解压后在 PowerShell 中运行 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install-preview.ps1`；脚本会校验安装文件，并拒绝默认覆盖带 IFC 的本机完整测试版。重新打开 Rhino，在 AI 代理菜单选择 **Miki-Rhino**。使用前在「模型连接」填写服务地址、模型和密钥。
+
+[Codex / DSH 桌面适配](integrations/rhino-desktop/README.md)可读取同机 Rhino 文档的选择、视口和对象信息。0.2 还修复了 MCP 事件流保持连接时的等待和重复分页问题。[后续优化计划](docs/superpowers/plans/2026-11-11-v0.2-distribution.md)。
 
 ## 使用路径
 

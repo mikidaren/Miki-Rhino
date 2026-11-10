@@ -29,7 +29,10 @@ public sealed class RhinoMcpClient(HttpClient client, Uri endpoint)
     public async Task<JsonArray> ListToolsAsync(CancellationToken token)
     {
         var tools = new JsonArray();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
         string? cursor = null;
+        const int MaxPages = 64;
+        int pages = 0;
         do
         {
             var parameters = new JsonObject();
@@ -38,6 +41,8 @@ public sealed class RhinoMcpClient(HttpClient client, Uri endpoint)
             foreach (var tool in result["tools"]?.AsArray() ?? [])
                 tools.Add(tool?.DeepClone());
             cursor = result["nextCursor"]?.GetValue<string>();
+            if (!string.IsNullOrEmpty(cursor) && (++pages >= MaxPages || !seen.Add(cursor)))
+                throw new InvalidOperationException("Rhino MCP 工具分页重复或超出限制。");
         } while (!string.IsNullOrEmpty(cursor));
         return tools;
     }
@@ -63,31 +68,46 @@ public sealed class RhinoMcpClient(HttpClient client, Uri endpoint)
         {
             ["jsonrpc"] = "2.0", ["id"] = id, ["method"] = method, ["params"] = parameters,
         });
-        using var response = await client.SendAsync(request, token).ConfigureAwait(false);
+        using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
             throw new InvalidOperationException($"Rhino MCP HTTP {(int)response.StatusCode}。请重新连接当前文档。");
         if (response.Headers.TryGetValues("Mcp-Session-Id", out var sessions))
             sessionId = sessions.First();
-        string text = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
-        JsonObject? body;
-        if (response.Content.Headers.ContentType?.MediaType == "text/event-stream")
-        {
-            body = null;
-            foreach (var block in text.Replace("\r\n", "\n").Split("\n\n"))
-            {
-                string data = string.Join("\n", block.Split('\n')
-                    .Where(line => line.StartsWith("data:", StringComparison.Ordinal))
-                    .Select(line => line[5..].TrimStart()));
-                if (string.IsNullOrWhiteSpace(data)) continue;
-                var candidate = JsonNode.Parse(data)?.AsObject();
-                if (candidate?["id"]?.ToString() == id.ToString()) body = candidate;
-            }
-        }
-        else body = JsonNode.Parse(text)?.AsObject();
-        if (body is null || body["id"]?.ToString() != id.ToString())
+        string expectedId = id.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        JsonObject? body = response.Content.Headers.ContentType?.MediaType == "text/event-stream"
+            ? await ReadEventResultAsync(response.Content, expectedId, token).ConfigureAwait(false)
+            : JsonNode.Parse(await response.Content.ReadAsStringAsync(token).ConfigureAwait(false))?.AsObject();
+        if (body is null || body["id"]?.ToString() != expectedId)
             throw new InvalidOperationException("Rhino MCP 响应编号不匹配。");
         if (body["error"] is not null)
             throw new McpRpcException();
         return body["result"]?.AsObject() ?? throw new InvalidOperationException("Rhino MCP 响应无效。");
+    }
+
+    private static async Task<JsonObject?> ReadEventResultAsync(HttpContent content, string expectedId, CancellationToken token)
+    {
+        using var stream = await content.ReadAsStreamAsync(token).ConfigureAwait(false);
+        using var reader = new StreamReader(stream);
+        var data = new System.Text.StringBuilder();
+        while (true)
+        {
+            var line = await reader.ReadLineAsync(token).ConfigureAwait(false);
+            if (line is null || line.Length == 0)
+            {
+                if (data.Length > 0)
+                {
+                    if (JsonNode.Parse(data.ToString()) is JsonObject candidate &&
+                        candidate["id"]?.ToString() == expectedId) return candidate;
+                    data.Clear();
+                }
+                if (line is null) return null;
+            }
+            else if (line.StartsWith("data:", StringComparison.Ordinal))
+            {
+                var value = line[5..];
+                if (data.Length > 0) data.Append('\n');
+                data.Append(value.StartsWith(' ') ? value[1..] : value);
+            }
+        }
     }
 }

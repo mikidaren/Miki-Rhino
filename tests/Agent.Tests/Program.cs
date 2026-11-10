@@ -268,6 +268,7 @@ finally
 }
 passed += IfcRuntimeTests.Run();
 passed += IfcDiagnosticTests.Run();
+passed += await McpTransportTests.RunAsync();
 Console.WriteLine($"{passed} agent checks passed");
 
 sealed class FixtureHandler : HttpMessageHandler

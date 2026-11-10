@@ -56,7 +56,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Chromium setup failed.' }
           Add-Content -LiteralPath $env:GITHUB_ENV -Value ("PANEL_SCROLL_PLAYWRIGHT=" + $playwright)
       - name: Identity, native-entry coexistence and browser regressions
-        run: node --test tests/identity.test.mjs tests/openbim-snapshot.test.mjs tests/browser/*.test.mjs
+        run: node --test tests/identity.test.mjs tests/openbim-snapshot.test.mjs tests/desktop-bridge.test.mjs tests/browser/*.test.mjs
       - name: Rebuild managed candidate and inspect debug paths
         run: ./scripts/build-local.ps1
       - name: Build IFC-free preview package

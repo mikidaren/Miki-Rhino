@@ -1,0 +1,20 @@
+{
+  "name": "miki-rhino-marketplace",
+  "interface": {
+    "displayName": "Miki-Rhino"
+  },
+  "plugins": [
+    {
+      "name": "miki-rhino",
+      "source": {
+        "source": "local",
+        "path": "./integrations/rhino-desktop"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
