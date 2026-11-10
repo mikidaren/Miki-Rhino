@@ -32,7 +32,10 @@ input.on("line", async line => {
     }
     const controller = new AbortController();
     active.set(id, controller);
-    try { send(id, await inspect(params?.name, params?.arguments, { signal: controller.signal })); }
+    try {
+      const result = await inspect(params?.name, params?.arguments, { signal: controller.signal });
+      if (!controller.signal.aborted) send(id, result);
+    }
     finally { active.delete(id); }
   } else send(id, null, { code: -32601, message: "Unknown method" });
 });

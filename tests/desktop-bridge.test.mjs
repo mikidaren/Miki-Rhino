@@ -23,13 +23,13 @@ test("Codex stdio and DSH use the same bounded Rhino tools", { timeout: 12000 },
     }
     if (request.method === "notifications/initialized") return res.writeHead(202).end();
     res.writeHead(200, { "Content-Type": "text/event-stream" });
-    res.write("data: {\"jsonrpc\":\"2.0\",\"method\":\"notifications/message\"}\r\n\r\n");
+    res.write("data: " + JSON.stringify({ jsonrpc: "2.0", id: request.id, method: "ping" }) + "\r\r");
     res.write("data: " + JSON.stringify({ jsonrpc: "2.0", id: request.id, result: {
       content: [{ type: "text", text: "Rhino: 砖墙" }, { type: "image", data: "unused" }],
-    } }) + "\r\n\r\n"); // Deliberately leave the connection open.
+    } }) + "\r\r"); // Deliberately leave the connection open.
   });
   t.after(() => { server.closeAllConnections(); server.close(); });
-  server.listen(0, "localhost");
+  server.listen(0, "127.0.0.1");
   await once(server, "listening");
   const port = server.address().port;
   const registered = [];
@@ -46,8 +46,15 @@ test("Codex stdio and DSH use the same bounded Rhino tools", { timeout: 12000 },
   assert.equal(requests.at(-1).session, "fixture");
   assert.equal(requests.at(-1).url, "/agent");
 
+  let proxyCalls = 0;
+  const proxy = createServer((_req, res) => { proxyCalls++; res.writeHead(502).end(); });
+  proxy.listen(0, "127.0.0.1");
+  await once(proxy, "listening");
+  t.after(() => { proxy.closeAllConnections(); proxy.close(); });
+  const proxyUrl = `http://127.0.0.1:${proxy.address().port}`;
   const child = spawn(process.execPath, [fileURLToPath(new URL("../integrations/rhino-desktop/server.mjs", import.meta.url))],
-    { env: { ...process.env, MIKI_RHINO_MCP_PORT: String(port) }, stdio: ["pipe", "pipe", "inherit"] });
+    { env: { ...process.env, NODE_USE_ENV_PROXY: "1", HTTP_PROXY: proxyUrl, http_proxy: proxyUrl,
+      NO_PROXY: "", no_proxy: "", MIKI_RHINO_MCP_PORT: String(port) }, stdio: ["pipe", "pipe", "inherit"] });
   t.after(() => child.kill());
   const responses = createInterface({ input: child.stdout });
   const rpc = async (id, method, params) => {
@@ -60,6 +67,7 @@ test("Codex stdio and DSH use the same bounded Rhino tools", { timeout: 12000 },
   assert.equal((await rpc(1, "initialize", { protocolVersion: "2025-06-18" })).protocolVersion, "2025-06-18");
   assert.deepEqual((await rpc(2, "tools/list")).tools.map(tool => tool.name), registered.map(tool => tool.name));
   assert.equal((await rpc(3, "tools/call", { name: "miki_rhino_context" })).content[0].text, "Rhino: 砖墙");
+  assert.equal(proxyCalls, 0);
   const count = requests.length;
   assert.equal((await rpc(4, "tools/call", { name: "run_python" })).isError, true);
   assert.equal((await inspect("miki_rhino_objects", { limit: 101 }, { port })).isError, true);
@@ -67,4 +75,5 @@ test("Codex stdio and DSH use the same bounded Rhino tools", { timeout: 12000 },
   redirect = true;
   assert.equal((await inspect("miki_rhino_context", {}, { port })).isError, true);
   assert.equal(requests.length, count + 1);
+  await assert.rejects(registered[0].execute({}), /HTTP 302/);
 });

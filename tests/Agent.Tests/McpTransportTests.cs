@@ -32,6 +32,15 @@ static class McpTransportTests
         catch (OperationCanceledException) when (cancel.IsCancellationRequested) { }
         Console.WriteLine("PASS waiting SSE call observes cancellation");
 
+        try
+        {
+            await new RhinoMcpClient(pending, new Uri("http://localhost:10500/agent"), TimeSpan.FromMilliseconds(150))
+                .CallToolAsync("run_csharp", new(), CancellationToken.None);
+            throw new Exception("MCP ignored the response deadline after receiving headers.");
+        }
+        catch (OperationCanceledException) { }
+        Console.WriteLine("PASS MCP enforces response deadline even without a caller token");
+
         int requests = 0;
         using var paging = new HttpClient(new Handler((id, _) =>
         {
@@ -50,7 +59,7 @@ static class McpTransportTests
         }
         catch (InvalidOperationException) when (requests == 2) { }
         Console.WriteLine("PASS duplicate MCP cursor fails without another request");
-        return 3;
+        return 4;
     }
 
     private static HttpResponseMessage Sse(Stream stream) => new(HttpStatusCode.OK)

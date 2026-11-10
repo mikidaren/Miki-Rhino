@@ -298,14 +298,15 @@ public sealed class ModelingSession
                                     {
                                         result = isLocal
                                             ? (await localTools!.CallToolAsync(name, arguments, CancellationToken.None)).DeepClone().AsObject()
-                                            : await mcp.CallToolAsync(name, arguments, CancellationToken.None);
+                                            : await mcp.CallToolAsync(name, arguments, readOnly ? token : CancellationToken.None);
                                     }
                                     catch (UnconfirmedToolException)
                                     {
                                         ToolCompletionUnknown = true;
                                         throw;
                                     }
-                                    catch (Exception error) when (error is HttpRequestException or TaskCanceledException ||
+                                    catch (OperationCanceledException) when (readOnly && token.IsCancellationRequested) { throw; }
+                                    catch (Exception error) when (error is HttpRequestException or OperationCanceledException ||
                                         !isLocal && error is JsonException or InvalidOperationException)
                                     {
                                         ToolCompletionUnknown = true;

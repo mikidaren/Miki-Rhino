@@ -334,12 +334,13 @@ sealed class FixtureHandler : HttpMessageHandler
             if (ToolFailure == "invalid-json")
                 return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{invalid") };
             if (ToolFailure == "wrong-id")
-                return Response(new JsonObject { ["id"] = 999999, ["result"] = new JsonObject() });
+                return Response(new JsonObject { ["jsonrpc"] = "2.0", ["id"] = 999999, ["result"] = new JsonObject() });
             if (ToolFailure == "http-error")
                 return new HttpResponseMessage(HttpStatusCode.BadGateway);
             if (ToolFailure == "rpc-error")
                 return Response(new JsonObject
                 {
+                    ["jsonrpc"] = "2.0",
                     ["id"] = body["id"]!.DeepClone(),
                     ["error"] = new JsonObject { ["code"] = -32602, ["message"] = "Refused before execution" },
                 });

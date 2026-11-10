@@ -1,3 +1,5 @@
+import { request } from "node:http";
+
 const version = "0.2.0";
 const rhinoProtocol = "2025-03-26";
 const maxBytes = 512 * 1024;
@@ -25,37 +27,50 @@ function validate(name, args) {
   return ["list_objects", { limit, includeHidden: false, ...(layer === undefined ? {} : { layer }), ...(geometryType === undefined ? {} : { geometryType }) }];
 }
 
+const isReply = (message, id) => message?.jsonrpc === "2.0" && message?.id === id &&
+  !Object.hasOwn(message, "method") && (Object.hasOwn(message, "result") !== Object.hasOwn(message, "error"));
+
 async function readResponse(response, expected) {
   const decoder = new TextDecoder();
-  let pending = "", data = [], bytes = 0;
-  const sse = response.headers.get("content-type")?.split(";")[0].trim().toLowerCase() === "text/event-stream";
-  if (!response.body) throw new Error("Empty Rhino MCP response.");
-  for await (const chunk of response.body) {
+  let pending = "", data = [], bytes = 0, afterCR = false;
+  const sse = response.headers["content-type"]?.split(";")[0].trim().toLowerCase() === "text/event-stream";
+  for await (const chunk of response) {
     bytes += chunk.byteLength;
     if (bytes > maxBytes) throw new Error("Rhino response exceeded the inspection limit. Use a narrower object filter.");
-    pending += decoder.decode(chunk, { stream: true });
+    let part = decoder.decode(chunk, { stream: true });
+    if (sse && afterCR && part.length) {
+      if (part.startsWith("\n")) part = part.slice(1);
+      afterCR = false;
+    }
+    if (sse && part.endsWith("\r")) afterCR = true;
+    pending += sse ? part.replace(/\r\n?/g, "\n") : part;
     if (!sse) continue;
     for (;;) {
       const end = pending.indexOf("\n");
       if (end < 0) break;
-      const line = pending.slice(0, end).replace(/\r$/, "");
+      const line = pending.slice(0, end);
       pending = pending.slice(end + 1);
       if (line.startsWith("data:")) data.push(line.slice(5).replace(/^ /, ""));
       else if (line === "" && data.length > 0) {
         const message = JSON.parse(data.join("\n"));
         data = [];
-        if (message?.id === expected) return message;
+        if (isReply(message, expected)) return message;
       }
     }
   }
   pending += decoder.decode();
   if (!sse) return JSON.parse(pending);
-  if (pending.startsWith("data:")) data.push(pending.slice(5).trimStart());
-  if (data.length) {
-    const message = JSON.parse(data.join("\n"));
-    if (message?.id === expected) return message;
-  }
   throw new Error("Rhino MCP ended before returning the requested result.");
+}
+
+function postLocal(port, body, headers, signal) {
+  return new Promise((resolve, reject) => {
+    // An explicit direct socket avoids Node's global fetch/HTTP proxy configuration.
+    const req = request({ host: "127.0.0.1", port, path: "/agent", agent: false, method: "POST", signal,
+      headers: { ...headers, Host: `localhost:${port}`, "Content-Length": Buffer.byteLength(body) } }, resolve);
+    req.on("error", reject);
+    req.end(body);
+  });
 }
 
 export function failure(message) {
@@ -68,7 +83,6 @@ export async function inspect(name, args = {}, options = {}) {
     const configuredPort = String(options.port ?? process.env.MIKI_RHINO_MCP_PORT ?? "10529");
     if (!/^\d{1,5}$/.test(configuredPort) || +configuredPort < 1024 || +configuredPort > 65535)
       throw new Error("MIKI_RHINO_MCP_PORT must be an integer from 1024 to 65535.");
-    const url = `http://localhost:${+configuredPort}/agent`;
     const deadline = AbortSignal.timeout(8000);
     const signal = options.signal ? AbortSignal.any([deadline, options.signal]) : deadline;
     let session, id = 0;
@@ -77,23 +91,23 @@ export async function inspect(name, args = {}, options = {}) {
       const requestId = notification ? undefined : ++id;
       let response;
       try {
-        response = await fetch(url, {
-          method: "POST", redirect: "error", signal,
-          headers: { "Content-Type": "application/json", Accept: "application/json, text/event-stream",
-            "MCP-Protocol-Version": protocol, ...(session ? { "Mcp-Session-Id": session } : {}) },
-          body: JSON.stringify({ jsonrpc: "2.0", method, params, id: requestId }),
-        });
+        response = await postLocal(+configuredPort,
+          JSON.stringify({ jsonrpc: "2.0", method, params, id: requestId }),
+          { "Content-Type": "application/json", Accept: "application/json, text/event-stream",
+            "MCP-Protocol-Version": protocol, ...(session ? { "Mcp-Session-Id": session } : {}) }, signal);
       } catch {
+        signal.throwIfAborted();
         throw new Error(`Cannot connect to Rhino MCP on localhost:${+configuredPort}. Open the intended Rhino document and run MCPStart ${+configuredPort}.`);
       }
-      if (!response.ok || notification) {
-        await response.body?.cancel();
-        if (!response.ok) throw new Error(`Rhino MCP returned HTTP ${response.status}.`);
+      const success = response.statusCode >= 200 && response.statusCode < 300;
+      if (!success || notification) {
+        response.destroy();
+        if (!success) throw new Error(`Rhino MCP returned HTTP ${response.statusCode}.`);
         return;
       }
-      session = response.headers.get("mcp-session-id") ?? session;
+      session = response.headers["mcp-session-id"] ?? session;
       const message = await readResponse(response, requestId);
-      if (message?.jsonrpc !== "2.0" || message?.id !== requestId || message.error || !message.result)
+      if (!isReply(message, requestId) || message.error || !message.result)
         throw new Error("Rhino MCP did not accept the inspection request.");
       return message.result;
     }
