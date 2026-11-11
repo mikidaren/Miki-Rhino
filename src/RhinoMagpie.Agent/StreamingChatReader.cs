@@ -7,6 +7,10 @@ namespace RhinoMagpie.Agent;
 public static class StreamingChatReader
 {
     public static async Task<JsonObject> ReadAsync(
+        Stream stream, Action<string>? onText, CancellationToken token) =>
+        (await ReadCompletionAsync(stream, onText, token).ConfigureAwait(false)).Message;
+
+    internal static async Task<(JsonObject Message, ChatUsage? Usage)> ReadCompletionAsync(
         Stream stream, Action<string>? onText, CancellationToken token)
     {
         using var reader = new StreamReader(stream, Encoding.UTF8, true, 4096, leaveOpen: true);
@@ -14,6 +18,7 @@ public static class StreamingChatReader
         var calls = new SortedDictionary<int, JsonObject>();
         var eventData = new StringBuilder();
         string? finishReason = null;
+        ChatUsage? usage = null;
         bool done = false;
         while (!done)
         {
@@ -38,6 +43,7 @@ public static class StreamingChatReader
                         ?? throw new JsonException("Empty stream event.");
                     if (chunk["error"] is not null)
                         throw new InvalidOperationException("Magpie 流式请求中断，请检查模型和策略的用量记录。");
+                    usage = ChatUsage.Parse(chunk["usage"]) ?? usage;
                     if (chunk["choices"] is JsonArray { Count: > 0 } choices)
                     {
                         var choice = choices[0]!;
@@ -64,7 +70,7 @@ public static class StreamingChatReader
         var result = new JsonObject { ["role"] = "assistant", ["content"] = text.ToString() };
         if (calls.Count > 0)
             result["tool_calls"] = new JsonArray(calls.Values.Select(call => (JsonNode)call).ToArray());
-        return result;
+        return (result, usage);
     }
 
     private static void AppendToolCall(SortedDictionary<int, JsonObject> calls, JsonObject fragment)

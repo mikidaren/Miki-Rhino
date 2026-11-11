@@ -873,6 +873,8 @@ await ReviewRegression("verbose native results preserve ledger metadata", async 
 if (reviewFailures.Count > 0)
     throw new AggregateException("Review regressions failed.", reviewFailures);
 passed += await LocalToolTests.RunAsync(config);
+passed += await ChatUsageTests.RunAsync(config);
+passed += ModelingContextProjectionTests.Run();
 {
     var managed = new ProjectWorkflow();
     managed.BeginRun("Meters");
@@ -973,6 +975,62 @@ using (var loopHttp = new HttpClient(loopFixture))
         session.Outcome == "needs_review" && !session.Workflow.Accepted,
         "streamed candidate workflow needs trusted native plan evidence before human review");
 }
+
+string WithUsage(string response) => response.Replace("data: [DONE]",
+    "data: {\"choices\":[],\"usage\":{\"prompt_tokens\":19,\"completion_tokens\":2,\"prompt_tokens_details\":{\"cached_tokens\":1}}}\r\n\r\ndata: [DONE]");
+
+using (var metered = new HttpFixture((turn, _) => Wire.Response(turn == 0
+    ? WithUsage(Wire.Calls(Wire.Call("inspect", "get_context", new JsonObject())))
+    : Wire.Text("Inspected"))))
+using (var meteredHttp = new HttpClient(metered))
+{
+    var session = new ModelingSession();
+    await session.RunAsync("Inspect", config, new MagpieGateway(meteredHttp),
+        new RhinoMcpClient(meteredHttp, HttpFixture.McpEndpoint), (_, _) => Task.FromResult(true),
+        (_, _) => Task.FromResult(""), (_, _) => { }, CancellationToken.None, new(MeasureRun: true));
+    Check(session.LastRunMetrics is { ModelCalls: 2, ModelResponses: 2, CallsWithUsage: 1,
+        CallsWithoutUsage: 1, InputTokens: null, OutputTokens: null, CachedInputTokens: null,
+        ObservedInputTokens: 19, ObservedOutputTokens: 2, ToolDispatches: 1,
+        ToolErrors: 0, MeteringTimeMs: >= 0, FirstTextMs: not null, Outcome: "complete" },
+        "meter retains observed usage but cannot claim complete totals for a partially measured run");
+}
+
+async Task<ModelingRunMetrics> ReplayRepeatedViews(bool compact)
+{
+    const int views = 6;
+    using var fixture = new HttpFixture((turn, _) => Wire.Response(WithUsage(turn < views
+        ? Wire.Calls(Wire.Call($"view-{turn}", "get_viewport_image", new JsonObject()))
+        : Wire.Text("Inspected"))));
+    fixture.ExtraTools.Add(new JsonObject
+    {
+        ["name"] = "get_viewport_image", ["description"] = "capture the viewport",
+        ["inputSchema"] = new JsonObject { ["type"] = "object" },
+        ["annotations"] = new JsonObject { ["readOnlyHint"] = true },
+    });
+    fixture.ToolResult = _ => new JsonObject
+    {
+        ["content"] = new JsonArray(new JsonObject
+        {
+            ["type"] = "image", ["mimeType"] = "image/png", ["data"] = new string('A', 8192),
+        }),
+    };
+    using var http = new HttpClient(fixture);
+    var session = new ModelingSession();
+    await session.RunAsync("Inspect repeatedly", config, new MagpieGateway(http),
+        new RhinoMcpClient(http, HttpFixture.McpEndpoint), (_, _) => Task.FromResult(true),
+        (_, _) => Task.FromResult(""), (_, _) => { }, CancellationToken.None,
+        new(MeasureRun: true, CompactContext: compact));
+    return session.LastRunMetrics ?? throw new Exception("Replay did not produce metrics");
+}
+
+var fullReplay = await ReplayRepeatedViews(false);
+var compactReplay = await ReplayRepeatedViews(true);
+Check(fullReplay is { ModelCalls: 7, ToolDispatches: 6, CallsWithUsage: 7, InputTokens: 133, OutputTokens: 14,
+    CachedInputTokens: 7, Outcome: "complete" } &&
+    compactReplay.ModelCalls == fullReplay.ModelCalls && compactReplay.ToolDispatches == fullReplay.ToolDispatches &&
+    compactReplay.ToolSchemaJsonBytes == fullReplay.ToolSchemaJsonBytes && compactReplay.Outcome == fullReplay.Outcome &&
+    compactReplay.MessageJsonBytes < fullReplay.MessageJsonBytes,
+    $"same replay execution with fewer message JSON bytes: {fullReplay.MessageJsonBytes} -> {compactReplay.MessageJsonBytes}");
 
 Console.WriteLine($"{passed} workflow checks passed");
 

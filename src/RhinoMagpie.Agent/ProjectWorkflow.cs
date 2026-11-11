@@ -9,7 +9,9 @@ public sealed record ModelingRunOptions(
     bool ExistingGeometry = false,
     bool ExplicitScale = false,
     IReadOnlyList<ReferenceInput>? References = null,
-    string Units = "");
+    string Units = "",
+    bool MeasureRun = false,
+    bool CompactContext = false);
 
 public sealed record ReferenceInput(
     string Id, string Name, string Kind, string Path, double? Width = null, string? ImageData = null,

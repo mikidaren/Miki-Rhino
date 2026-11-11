@@ -15,6 +15,7 @@ public sealed class ModelingSession
     public bool ToolCompletionUnknown { get; private set; }
     public ProjectWorkflow Workflow { get; } = new();
     public string Outcome { get; private set; } = "idle";
+    public ModelingRunMetrics? LastRunMetrics { get; private set; }
 
     private const string Instructions = """
         You are Miki-Rhino, an AI modeling assistant working inside Rhino.
@@ -86,6 +87,15 @@ public sealed class ModelingSession
         ILocalModelingTools? localTools = null)
     {
         if (!await gate.WaitAsync(0, token)) throw new InvalidOperationException("当前会话仍在运行。");
+        ModelingRunMeter? meter = options?.MeasureRun == true ? new() : null;
+        LastRunMetrics = null;
+        async Task<bool> ApproveAsync(ToolInvocation invocation)
+        {
+            if (meter is not null) meter.ApprovalChecks++;
+            bool granted = await approve(invocation, token);
+            if (!granted && meter is not null) meter.DeclinedApprovals++;
+            return granted;
+        }
         try
         {
             if (ToolCompletionUnknown) throw new UnconfirmedToolException();
@@ -173,8 +183,23 @@ public sealed class ModelingSession
             {
                 token.ThrowIfCancellationRequested();
                 report("assistant_start", "");
-                var message = await gateway.CompleteAsync(config, messages, tools, token,
-                    delta => report("assistant_delta", delta));
+                var requestMessages = options.CompactContext ? ModelingContextProjection.Project(messages) : messages;
+                long callStarted = meter?.StartCall(requestMessages, tools) ?? 0;
+                ChatUsage? usage = null;
+                bool returned = false;
+                JsonObject message;
+                try
+                {
+                    message = await gateway.CompleteAsync(config, requestMessages, tools, token,
+                        delta =>
+                        {
+                            meter?.SeeText(delta);
+                            report("assistant_delta", delta);
+                        },
+                        onUsage: meter is null ? null : value => usage = value, requestUsage: meter is not null);
+                    returned = true;
+                }
+                finally { meter?.FinishCall(callStarted, returned, usage); }
                 string? text = message["content"]?.GetValue<string>();
                 report("Magpie", text ?? "");
                 var calls = message["tool_calls"] as JsonArray;
@@ -194,6 +219,7 @@ public sealed class ModelingSession
                             ["role"] = "user",
                             ["content"] = Workflow.ContinuationPrompt(),
                         });
+                        if (meter is not null) meter.RepairReminders++;
                         report("诊断", "上一项操作未通过，继续修正并验证。");
                         continue;
                     }
@@ -218,6 +244,7 @@ public sealed class ModelingSession
                                 return;
                             }
                             messages.Add(new JsonObject { ["role"] = "user", ["content"] = Workflow.ContinuationPrompt() });
+                            if (meter is not null) meter.ContinuationReminders++;
                             report("状态", "当前计划仍有待办，继续处理下一项。");
                             continue;
                         }
@@ -268,7 +295,7 @@ public sealed class ModelingSession
                                     if (arguments["source"]?.GetValue<string>() == "confirmed_assumption" &&
                                         !Workflow.IsBasisApproved(note))
                                     {
-                                        declined = !await approve(new ToolInvocation("confirm_design_basis", arguments, false), token);
+                                        declined = !await ApproveAsync(new ToolInvocation("confirm_design_basis", arguments, false));
                                         if (!declined) Workflow.RecordBasisApproval(note);
                                     }
                                     if (!declined) Workflow.SetBasis(arguments, options);
@@ -282,6 +309,7 @@ public sealed class ModelingSession
                                 result = Error("This tool is unavailable.");
                             else if (name == "ask_user")
                             {
+                                if (meter is not null) meter.UserQuestions++;
                                 result = Text(await askUser(arguments, token));
                                 token.ThrowIfCancellationRequested();
                             }
@@ -293,7 +321,7 @@ public sealed class ModelingSession
                                     result = Error("受管建筑项目的写入必须使用建筑模式，以保留尺度和版本验收。普通 Rhino 读取仍可使用。");
                                 else if (options.Architectural && !readOnly && name != "openbim_export_ifc" && !Workflow.BasisConfirmed)
                                     result = Error("先确认平面和尺度，再调用 set_design_basis。当前未执行几何修改。");
-                                else if (!await approve(new ToolInvocation(name, arguments, readOnly), token))
+                                else if (!await ApproveAsync(new ToolInvocation(name, arguments, readOnly)))
                                 {
                                     result = Error("The user declined this tool. Stop and ask for revised instructions.");
                                     declined = true;
@@ -304,6 +332,7 @@ public sealed class ModelingSession
                                     report("工具", name);
                                     report("tool_input", arguments.ToJsonString());
                                     dispatched = true;
+                                    if (meter is not null) meter.ToolDispatches++;
                                     try
                                     {
                                         result = isLocal
@@ -335,6 +364,7 @@ public sealed class ModelingSession
                         if (dispatched)
                         {
                             bool success = result["isError"]?.GetValue<bool>() != true;
+                            if (!success && meter is not null) meter.ToolErrors++;
                             string operationId = Workflow.ObserveTool(name, readOnly, success);
                             if (reviewTools is not null && isLocal && name is
                                 "openbim_apply" or "openbim_apply_layout" or "openbim_set_plan_brief" or "openbim_plan_review")
@@ -397,6 +427,7 @@ public sealed class ModelingSession
         finally
         {
             if (Outcome == "running") Outcome = "paused";
+            LastRunMetrics = meter?.Snapshot(Outcome);
             gate.Release();
         }
     }
