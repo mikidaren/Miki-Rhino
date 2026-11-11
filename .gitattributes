@@ -1,1 +1,2 @@
 vendor/openbim/** -text
+src/RhinoMagpie.Agent/Resources/*.py -text

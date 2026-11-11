@@ -8,6 +8,8 @@
 
 [Codex / DSH 桌面适配](integrations/rhino-desktop/README.md)可读取同机 Rhino 文档的选择、视口和对象信息。0.2 还修复了 MCP 事件流保持连接时的等待和重复分页问题。[后续优化计划](docs/superpowers/plans/2026-11-11-v0.2-distribution.md)。
 
+本地完整候选的[两层建筑工作流](docs/architectural-loop.md)说明了任务书、候选确认、原生建模、按版本验收和保存重开的步骤。
+
 ## 使用路径
 
 本地测试版可从 Rhino AI 的代理菜单选择 **Miki-Rhino**，也提供 `MikiRhino` 和 `MikiRhinoStandalone` 命令。设置中的「模型连接」打开原生表单，填写 OpenAI-compatible API 基地址、模型 ID 和 API key。API 基地址可包含 `/v1` 或服务自定义前缀。仅填写服务器根地址时补全 `/v1`。远程服务要求 HTTPS，本机回环地址支持 HTTP。允许显式配置无密钥的本机服务。

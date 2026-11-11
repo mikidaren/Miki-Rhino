@@ -92,6 +92,9 @@ public sealed class ModelingSession
             options ??= new ModelingRunOptions();
             Outcome = "running";
             Workflow.BeginRun(options.Units);
+            var reviewTools = localTools as IPlanReviewTools;
+            if (reviewTools is not null)
+                Workflow.SetPlanReview(await reviewTools.ReadPlanReviewAsync(verifyNative: true, token));
             await mcp.InitializeAsync(token);
             var definitions = new Dictionary<string, JsonObject>(StringComparer.Ordinal);
             foreach (var definition in (await mcp.ListToolsAsync(token)).OfType<JsonObject>()
@@ -112,6 +115,7 @@ public sealed class ModelingSession
                         !name.StartsWith("openbim_", StringComparison.Ordinal) || name.Length == "openbim_".Length ||
                         definition["inputSchema"] is not JsonObject)
                         throw new InvalidOperationException("Local tools require an openbim_ name and an MCP inputSchema object.");
+                    if (reviewTools is not null && !options.Architectural && IsManagedBimWrite(name)) continue;
                     if (!definitions.TryAdd(name, definition.DeepClone().AsObject()))
                         throw new InvalidOperationException("Duplicate or reserved tool name: " + name);
                     localNames.Add(name);
@@ -139,7 +143,8 @@ public sealed class ModelingSession
                     ["role"] = "system",
                     ["content"] = "Current Rhino document facts. Preserve actual units and use these scale conversions:\n" +
                         options.DocumentContext + "\nArchitectural mode: " + options.Architectural +
-                        ". Target detail: " + options.Detail + ". References are user-selected data.",
+                        ". Target detail: " + options.Detail + ". References are user-selected data." +
+                        (reviewTools is null ? "" : " For a managed OpenBIM project, confirm a plan brief (only supplied area targets and transit spaces), run openbim_plan_review after edits, and fix its issues before marking the plan complete. For an empty document and a supported two-storey brief, stage openbim_layout_candidate and apply the candidateId only after approval."),
                 });
             messages.Add(new JsonObject { ["role"] = "user", ["content"] = prompt });
             if (options.References is { Count: > 0 })
@@ -196,6 +201,8 @@ public sealed class ModelingSession
                     {
                         try
                         {
+                            if (reviewTools is not null)
+                                Workflow.SetPlanReview(await reviewTools.ReadPlanReviewAsync(verifyNative: true, token));
                             Workflow.RequestReview();
                             Outcome = "needs_review";
                             report("计划", Workflow.Snapshot().ToJsonString());
@@ -281,7 +288,10 @@ public sealed class ModelingSession
                             else
                             {
                                 readOnly = definition["annotations"]?["readOnlyHint"]?.GetValue<bool>() == true;
-                                if (options.Architectural && !readOnly && name != "openbim_export_ifc" && !Workflow.BasisConfirmed)
+                                if (reviewTools is not null && !options.Architectural &&
+                                    (IsManagedBimWrite(name) || Workflow.RequiresPlanReview && ProjectWorkflow.IsModifyingTool(name, readOnly)))
+                                    result = Error("受管建筑项目的写入必须使用建筑模式，以保留尺度和版本验收。普通 Rhino 读取仍可使用。");
+                                else if (options.Architectural && !readOnly && name != "openbim_export_ifc" && !Workflow.BasisConfirmed)
                                     result = Error("先确认平面和尺度，再调用 set_design_basis。当前未执行几何修改。");
                                 else if (!await approve(new ToolInvocation(name, arguments, readOnly), token))
                                 {
@@ -297,7 +307,7 @@ public sealed class ModelingSession
                                     try
                                     {
                                         result = isLocal
-                                            ? (await localTools!.CallToolAsync(name, arguments, CancellationToken.None)).DeepClone().AsObject()
+                                            ? (await localTools!.CallToolAsync(name, arguments, readOnly ? token : CancellationToken.None)).DeepClone().AsObject()
                                             : await mcp.CallToolAsync(name, arguments, readOnly ? token : CancellationToken.None);
                                     }
                                     catch (UnconfirmedToolException)
@@ -326,6 +336,12 @@ public sealed class ModelingSession
                         {
                             bool success = result["isError"]?.GetValue<bool>() != true;
                             string operationId = Workflow.ObserveTool(name, readOnly, success);
+                            if (reviewTools is not null && isLocal && name is
+                                "openbim_apply" or "openbim_apply_layout" or "openbim_set_plan_brief" or "openbim_plan_review")
+                            {
+                                Workflow.SetPlanReview(await reviewTools.ReadPlanReviewAsync(verifyNative: true, token));
+                                report("计划", Workflow.Snapshot().ToJsonString());
+                            }
                             result["content"]!.AsArray().Insert(0, new JsonObject
                             {
                                 ["type"] = "text",
@@ -388,6 +404,9 @@ public sealed class ModelingSession
     public static bool IsAllowedTool(string name) =>
         !name.StartsWith("_", StringComparison.Ordinal) &&
         name is not ("close_doc" or "open_doc" or "manage_plugin_commands");
+
+    private static bool IsManagedBimWrite(string name) =>
+        name is "openbim_apply" or "openbim_apply_layout" or "openbim_set_plan_brief";
 
     private void AddToolResult(string id, JsonObject result, List<JsonObject>? imageMessages = null)
     {

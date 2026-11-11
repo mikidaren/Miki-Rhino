@@ -9,5 +9,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../RhinoMagpie/BridgeConfig.cs" Link="BridgeConfig.cs" />
+    <EmbeddedResource Include="Resources/miki_plan_review.py" LogicalName="RhinoMagpie.Agent.Resources.miki_plan_review.py" />
+    <EmbeddedResource Include="Resources/layout_baseline.py" LogicalName="RhinoMagpie.Agent.Resources.layout_baseline.py" Condition="Exists('Resources/layout_baseline.py')" />
   </ItemGroup>
 </Project>

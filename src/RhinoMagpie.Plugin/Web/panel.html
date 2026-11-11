@@ -307,7 +307,7 @@ h2 {
   overflow: hidden;
 }
 
-.plan summary {
+.plan > summary {
   padding: 12px;
   display: flex;
   align-items: center;
@@ -317,7 +317,7 @@ h2 {
   font-weight: 550;
 }
 
-.plan summary::-webkit-details-marker {
+.plan > summary::-webkit-details-marker {
   display: none;
 }
 
@@ -344,6 +344,10 @@ details[open] > summary .chevron {
   overflow: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
+}
+
+.plan-content:focus-visible {
+  outline-offset: -2px;
 }
 
 .goal {
@@ -384,6 +388,82 @@ details[open] > summary .chevron {
   margin-top: 5px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+.plan-review {
+  margin: 0 0 8px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--bg);
+  font-size: 11px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.plan-review-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px 8px;
+}
+
+.plan-review h2 {
+  margin: 0;
+  font-size: 12px;
+}
+
+.plan-review p {
+  margin: 3px 0 0;
+}
+
+.plan-review-status {
+  font-weight: 600;
+}
+
+.plan-review[data-status="passed"] .plan-review-status {
+  color: var(--green);
+}
+
+.plan-review[data-status="failed"] .plan-review-status,
+.plan-issues-omitted {
+  color: var(--danger);
+}
+
+.plan-review-context,
+.plan-review-criteria {
+  color: var(--muted);
+}
+
+.plan-review-coverage {
+  margin: 4px 0 0;
+}
+
+.plan-review-coverage dt,
+.plan-review-coverage dd {
+  display: inline;
+  margin: 0;
+}
+
+.plan-review-coverage dt::after {
+  content: "：";
+}
+
+.plan-issues summary {
+  min-height: 24px;
+  margin-top: 3px;
+  padding: 3px 2px;
+  cursor: pointer;
+}
+
+.plan-issues ul {
+  margin: 2px 0 0;
+  padding-inline-start: 17px;
+}
+
+.plan-issues li + li {
+  margin-top: 3px;
 }
 
 .steps {
@@ -801,6 +881,15 @@ textarea::placeholder {
   padding: 1px 4px;
 }
 
+#check-plan {
+  flex-shrink: 0;
+}
+
+#check-plan[aria-disabled="true"] {
+  cursor: default;
+  opacity: .45;
+}
+
 .jump {
   position: absolute;
   right: 20px;
@@ -1082,12 +1171,27 @@ select {
   <main class="viewport" id="viewport" aria-label="对话与执行进度" tabindex="0">
     <details class="plan" id="plan" hidden open>
       <summary><svg class="chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m6 4 4 4-4 4"/></svg><span>阶段计划</span><span class="plan-count" id="plan-count"></span></summary>
-      <div class="plan-content">
+      <div class="plan-content" role="region" aria-label="阶段计划内容" tabindex="0">
         <p class="goal" id="goal"></p>
         <div class="plan-basis" id="plan-basis" hidden>
           <div class="basis-heading"><span>建模依据</span><span class="basis-status" id="basis-status"></span></div>
           <p class="basis-note" id="basis-note"></p>
         </div>
+        <section class="plan-review" id="plan-review" aria-labelledby="plan-review-title" hidden>
+          <div class="plan-review-header"><h2 id="plan-review-title">平面检查</h2><span class="plan-review-status" id="plan-review-status" role="status"></span></div>
+          <p class="plan-review-context" id="plan-review-context" hidden></p>
+          <p class="plan-review-criteria">判据：房间位于楼板范围内、与墙体及其他房间不重叠；经门可达楼梯平台；按已设目标核对面积。</p>
+          <p id="plan-review-note" hidden></p>
+          <dl class="plan-review-coverage" id="plan-review-coverage" hidden>
+            <div><dt>楼梯路径</dt><dd id="plan-review-routes"></dd></div>
+            <div><dt>面积目标</dt><dd id="plan-review-area"></dd></div>
+          </dl>
+          <details class="plan-issues" id="plan-issues" hidden>
+            <summary id="plan-issues-summary">问题详情</summary>
+            <ul id="plan-issues-list"></ul>
+          </details>
+          <p class="plan-issues-omitted" id="plan-issues-omitted" hidden></p>
+        </section>
         <ol class="steps" id="steps"></ol>
       </div>
     </details>
@@ -1114,7 +1218,7 @@ select {
           <button class="send primary" id="send" aria-label="发送" title="发送" disabled><svg id="send-icon" viewBox="0 0 24 24"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
         </div>
       </div>
-      <div class="status-line"><span class="spinner" id="busy-indicator" hidden aria-hidden="true"></span><span class="execution-mode" id="execution-mode">逐次确认</span><span class="status-text" id="status" role="status" aria-live="polite">准备就绪</span><button id="refresh" title="刷新文档与模型信息">刷新</button></div>
+      <div class="status-line"><span class="spinner" id="busy-indicator" hidden aria-hidden="true"></span><span class="execution-mode" id="execution-mode">逐次确认</span><span class="status-text" id="status" role="status" aria-live="polite">准备就绪</span><button class="secondary" id="check-plan" type="button" aria-controls="plan-review" aria-disabled="true">检查平面</button><button id="refresh" title="刷新文档与模型信息">刷新</button></div>
     </footer>
   </div>
   <section class="popover" id="settings" aria-label="设置" hidden>
@@ -1153,7 +1257,20 @@ select {
   const state = { documentId: "", document: "", units: "", unitsKey: "", status: "", endpoint: "", configuredModel: "", ifcRuntimeAvailable: false, busy: false, canSend: false, canStop: false, draft: "", autoTools: false, executionModeRevision: 0, architectural: true, detail: "developed", models: [], catalogLoading: false, catalogError: "", selectedModel: "", messages: [], references: [], plan: null };
   const messageNodes = new Map();
   const stepNodes = new Map();
+  const planIssueNodes = new Map();
   const referenceNodes = new Map();
+  const planReviewStatuses = new Map([
+    ["needs_brief", "待补充任务书"], ["pending", "待检查"], ["passed", "已检查项通过"],
+    ["failed", "检查未通过"], ["unavailable", "检查暂不可用"], ["stale", "结果已过期"],
+    ["incomplete", "结果不完整"]
+  ]);
+  const planIssueLabels = new Map([
+    ["NO_SPACES", "缺少房间或空间"], ["NO_FLOOR_FOOTPRINT", "该层缺少楼板范围"],
+    ["ROOM_OUTSIDE_FLOOR", "房间超出楼板范围"], ["ROOM_OVERLAPS_WALL", "房间与墙体重叠"],
+    ["ROOM_OVERLAP", "房间重叠"], ["AREA_BELOW_MIN", "面积低于下限"], ["AREA_ABOVE_MAX", "面积高于上限"],
+    ["STAIR_LANDING_NOT_LINKED", "楼梯平台未接通空间"], ["NO_STAIR_ROUTE", "空间无法到达楼梯"]
+  ]);
+  const areaFormat = new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 6 });
   let localDraft = false;
   let draftTimer = null;
   let pendingDraft = null;
@@ -1261,6 +1378,10 @@ select {
     composer.style.height = Math.min(composer.scrollHeight, 150) + "px";
     composer.scrollTop = selectionScroll;
   }
+  function canCheckPlan() {
+    const documentId = string(state.documentId).trim();
+    return state.architectural !== false && !state.busy && !state.canStop && Boolean(documentId) && documentId !== "0";
+  }
   function refreshControls() {
     const stopping = Boolean(state.canStop);
     const disabled = stopping ? false : Boolean(state.busy) || !state.canSend || !composer.value.trim();
@@ -1274,6 +1395,8 @@ select {
     byId("model-button").disabled = Boolean(state.busy);
     byId("catalog-refresh").disabled = Boolean(state.busy);
     byId("configure-connection").disabled = Boolean(state.busy);
+    byId("check-plan").hidden = state.architectural === false;
+    byId("check-plan").setAttribute("aria-disabled", String(!canCheckPlan()));
     byId("export-ifc").disabled = Boolean(state.busy || state.canStop || state.catalogLoading) ||
       !state.ifcRuntimeAvailable || !string(state.documentId) || string(state.documentId) === "0";
     text(byId("ifc-status"), state.ifcRuntimeAvailable ? "选择保存位置并读回验证" : "IFC 组件未内置或无法读取，暂不可用");
@@ -1377,6 +1500,59 @@ select {
       text(detail.querySelector("pre"), item.detail);
     }
   }
+  function isCount(value) { return Number.isInteger(value) && value >= 0; }
+  function renderPlanIssue(node, issue) {
+    const code = string(issue.code);
+    const ids = Array.isArray(issue.ids) ? issue.ids.filter(Boolean).join("、") : "";
+    const parts = [planIssueLabels.get(code) || (code ? "未识别问题（" + code + "）" : "未标记问题")];
+    if (ids) parts.push(ids);
+    [["areaM2", "涉及面积"], ["actualM2", "实测"], ["limitM2", "限值"]].forEach(function (field) {
+      const value = issue[field[0]];
+      if (Number.isFinite(value)) parts.push(field[1] + " " + areaFormat.format(value) + " m²");
+    });
+    text(node, parts.join(" · "));
+  }
+  function renderPlanReview(review) {
+    review = review || {};
+    let status = string(review.status);
+    const issues = Array.isArray(review.issues) ? review.issues.filter(function (issue) { return issue && typeof issue === "object"; }) : [];
+    const omitted = isCount(review.issuesOmitted) ? review.issuesOmitted : 0;
+    const routes = review.stairRoutes;
+    const hasRoutes = routes && isCount(routes.found) && isCount(routes.total) && routes.found <= routes.total;
+    const area = isCount(review.areaTargetsChecked) ? review.areaTargetsChecked : null;
+    const completed = status === "passed" || status === "failed";
+    if (status === "passed" && (issues.length || omitted || (hasRoutes && routes.found < routes.total) ||
+        (!(hasRoutes && routes.total > 0) && !(area > 0)))) status = "incomplete";
+
+    const card = byId("plan-review");
+    card.hidden = state.architectural === false;
+    card.dataset.status = status;
+    text(byId("plan-review-status"), planReviewStatuses.get(status) || "暂无检查结果");
+
+    const context = [];
+    if (review.projectId) context.push("项目 " + string(review.projectId));
+    if (isCount(review.revision)) context.push("版本 " + review.revision);
+    byId("plan-review-context").hidden = !context.length;
+    text(byId("plan-review-context"), context.join(" · "));
+
+    const note = status === "stale" ? "请重新检查；这里的旧结果仅供参考。" :
+      status === "incomplete" ? "当前数据不足以确认通过。" :
+      status === "failed" && !issues.length && !omitted ? "未返回问题详情。" : "";
+    byId("plan-review-note").hidden = !note;
+    text(byId("plan-review-note"), note);
+    byId("plan-review-coverage").hidden = !(completed || hasRoutes || area !== null);
+    text(byId("plan-review-routes"), !hasRoutes ? "未报告" : routes.total === 0 ? "未检查（无空间）" :
+      routes.found + " / " + routes.total + " 个空间可达");
+    text(byId("plan-review-area"), area === null ? "未报告" : area === 0 ? "未检查（无面积目标）" : "已检查 " + area + " 项");
+
+    const details = byId("plan-issues");
+    details.hidden = !issues.length;
+    if (!issues.length) details.open = false;
+    text(byId("plan-issues-summary"), "问题详情（" + issues.length + " 项）");
+    reconcile(byId("plan-issues-list"), issues, planIssueNodes, function () { return element("li"); }, renderPlanIssue);
+    byId("plan-issues-omitted").hidden = !omitted;
+    text(byId("plan-issues-omitted"), omitted ? "另有 " + omitted + " 项问题未显示" : "");
+  }
   function renderPlan() {
     const plan = state.plan;
     byId("plan").hidden = !plan;
@@ -1389,6 +1565,7 @@ select {
     text(byId("basis-status"), plan.basisConfirmed === true ? "已确认" : "待确认");
     text(byId("basis-note"), plan.basis);
     byId("basis-note").hidden = !plan.basis;
+    renderPlanReview(plan.planReview);
     const steps = Array.isArray(plan.steps) ? plan.steps : [];
     const completed = steps.filter(function (step) { return step && progressKind(step.status) === "done"; }).length;
     text(byId("plan-count"), completed + " / " + steps.length);
@@ -1548,6 +1725,7 @@ select {
       });
       ["messages", "models", "references"].forEach(function (key) { if (!Array.isArray(state[key])) state[key] = []; });
       if (previousDocumentId !== string(state.documentId)) {
+        if (!Object.prototype.hasOwnProperty.call(incoming, "plan")) state.plan = null;
         cancelDraftSend();
         localDraft = false;
         composing = false;
@@ -1623,6 +1801,11 @@ select {
   byId("attach").addEventListener("click", function () { send({ action: "attach" }); });
   byId("empty-attach").addEventListener("click", function () { send({ action: "attach" }); });
   byId("refresh").addEventListener("click", function () { send({ action: "refresh" }); });
+  byId("check-plan").addEventListener("click", function () {
+    if (!canCheckPlan()) return;
+    if (state.plan) byId("plan").open = true;
+    send({ action: "checkPlan", documentId: string(state.documentId) });
+  });
   byId("catalog-refresh").addEventListener("click", function () { send({ action: "refresh" }); });
   byId("configure-connection").addEventListener("click", function () {
     if (state.busy) return;

@@ -30,6 +30,9 @@ public sealed class ProjectWorkflow
     public bool AwaitingReview { get; private set; }
     public bool Accepted { get; private set; }
     private bool hasFreshReadback;
+    private JsonObject? planReview;
+    public bool RequiresPlanReview => planReview is not null;
+    private bool PlanReviewPassed => planReview is null || planReview["status"]?.GetValue<string>() == "passed";
     private string? approvedBasis;
     private sealed record Operation(string Id, string Name, bool Modifying, bool Success, string[] Stages);
     private readonly List<Operation> operations = [];
@@ -58,7 +61,24 @@ public sealed class ProjectWorkflow
     public bool IsBasisApproved(string note) => approvedBasis is not null && approvedBasis == note.Trim();
 
     public static bool IsModifyingTool(string name, bool readOnly) =>
-        !readOnly && name is not ("get_viewport_image" or "zoom_to_layer" or "zoom_to_object" or "set_camera" or "openbim_export_ifc");
+        !readOnly && name is not ("get_viewport_image" or "zoom_to_layer" or "zoom_to_object" or "set_camera" or
+            "openbim_export_ifc" or "openbim_set_plan_brief");
+
+    public void SetPlanReview(JsonObject? state)
+    {
+        if (state is null && planReview is not null)
+        {
+            Steps = Steps.Select(step => step with { Status = "pending" }).ToList();
+            hasFreshReadback = false;
+        }
+        bool changed = !JsonNode.DeepEquals(planReview, state);
+        planReview = state?.DeepClone().AsObject();
+        if (changed)
+        {
+            AwaitingReview = false;
+            Accepted = false;
+        }
+    }
 
     public string ObserveTool(string name, bool readOnly, bool success)
     {
@@ -69,9 +89,13 @@ public sealed class ProjectWorkflow
         if (modifying)
         {
             hasFreshReadback = false;
+            AwaitingReview = false;
+            Accepted = false;
+            if (planReview?["status"]?.GetValue<string>() is "passed" or "failed")
+                planReview["status"] = "stale";
             if (!success) failures.Add(id);
         }
-        if (success && name is "get_context" or "list_objects" or "openbim_inspect") hasFreshReadback = true;
+        if (success && name is "get_context" or "list_objects" or "openbim_inspect" or "openbim_plan_review") hasFreshReadback = true;
         return id;
     }
 
@@ -101,7 +125,7 @@ public sealed class ProjectWorkflow
 
     private static string RepairFamily(string name) => name switch
     {
-        "run_command" or "run_csharp" or "run_python" or "openbim_apply" => "geometry",
+        "run_command" or "run_csharp" or "run_python" or "openbim_apply" or "openbim_apply_layout" => "geometry",
         _ => name,
     };
 
@@ -118,7 +142,7 @@ public sealed class ProjectWorkflow
             "confirmed_assumption" => IsBasisApproved(note),
             _ => false,
         };
-        if (!grounded || string.IsNullOrWhiteSpace(note))
+        if (!grounded || string.IsNullOrWhiteSpace(note) || note.Length > 4096)
             throw new InvalidOperationException("尺度依据尚未确认。假设尺度必须经过专门确认，也可使用用户提供的明确尺寸、已定标参考图或现有模型。");
         Basis = note;
         basisUnits = options.Units;
@@ -129,7 +153,7 @@ public sealed class ProjectWorkflow
     {
         string goal = arguments["goal"]?.GetValue<string>() ?? Goal;
         var items = arguments["steps"] as JsonArray;
-        if (string.IsNullOrWhiteSpace(goal) || items is not { Count: > 0 and <= 20 })
+        if (string.IsNullOrWhiteSpace(goal) || goal.Length > 4096 || items is not { Count: > 0 and <= 20 })
             throw new InvalidOperationException("请提供目标和 1–20 个有验收条件的步骤。");
         var steps = new List<WorkflowStep>();
         var ids = new HashSet<string>(StringComparer.Ordinal);
@@ -140,7 +164,8 @@ public sealed class ProjectWorkflow
             string acceptance = item?["acceptance"]?.GetValue<string>() ?? "";
             string status = item?["status"]?.GetValue<string>() ?? "pending";
             if (string.IsNullOrWhiteSpace(id) || !ids.Add(id) || string.IsNullOrWhiteSpace(title) ||
-                string.IsNullOrWhiteSpace(acceptance) || status is not ("pending" or "in_progress" or "complete"))
+                string.IsNullOrWhiteSpace(acceptance) || id.Length > 2048 || title.Length > 2048 ||
+                acceptance.Length > 2048 || status is not ("pending" or "in_progress" or "complete"))
                 throw new InvalidOperationException("每个步骤需要唯一 ID、名称、验收条件和有效状态。");
             bool previouslyComplete = Steps.Any(step => step.Id == id && step.Status == "complete");
             var previous = Steps.FirstOrDefault(step => step.Id == id);
@@ -153,6 +178,10 @@ public sealed class ProjectWorkflow
         }
         foreach (var previous in Steps)
             if (!ids.Contains(previous.Id)) steps.Add(previous);
+        if (steps.Count > 20 || steps.Sum(step => step.Id.Length + step.Title.Length + step.Acceptance.Length) > 10000)
+            throw new InvalidOperationException("请保留至多 20 个步骤，合计说明不超过 10000 字符，以便随文档保存和重开。");
+        if (steps.All(step => step.Status == "complete") && !PlanReviewPassed)
+            throw new InvalidOperationException("简易 BIM 的平面尚未通过当前版本检查，不能把全部步骤标为完成。");
         Goal = goal;
         Steps = steps;
         AwaitingReview = false;
@@ -168,6 +197,9 @@ public sealed class ProjectWorkflow
             return "建筑建模尚未具备确认过的平面和尺度依据。请检查实际单位，必要时向用户提问，调用 set_design_basis 后再修改几何。不要把单次答复当作任务完成。";
         if (Steps.Count == 0)
             return "请先调用 update_project_plan，列出从平面、体量到目标细度的步骤和逐项验收条件，再按计划执行。";
+        if (!PlanReviewPassed)
+            return "简易 BIM 平面尚未通过当前版本检查（" + planReview?["status"]?.GetValue<string>() +
+                "）。需要已确认的平面任务书和 openbim_plan_review 的通过结果。若缺运行时或设计信息，请说明缺项并暂停。";
         if (!hasFreshReadback)
             return "当前修改之后还缺少几何读回。请使用 get_context、list_objects 或 openbim_inspect 检查实际结果，再更新步骤状态或提交验收。";
         string pending = string.Join("；", Steps.Where(step => step.Status != "complete")
@@ -178,16 +210,52 @@ public sealed class ProjectWorkflow
 
     public void RequestReview()
     {
-        if (HasPending || !BasisConfirmed || !hasFreshReadback || HasUnresolvedFailures)
+        if (HasPending || !BasisConfirmed || !hasFreshReadback || HasUnresolvedFailures || !PlanReviewPassed)
             throw new InvalidOperationException("仍有待办步骤或缺少最终几何读回。");
         AwaitingReview = true;
     }
 
     public void Accept()
     {
-        if (!AwaitingReview) throw new InvalidOperationException("当前成果尚未进入待验收状态。");
+        if (!AwaitingReview || !PlanReviewPassed) throw new InvalidOperationException("当前成果尚未进入待验收状态，或平面检查已过期。");
         Accepted = true;
         AwaitingReview = false;
+    }
+
+    // Persist design notes only. An old file cannot grant completion or scale approval.
+    public JsonObject ExportCheckpoint() => new()
+    {
+        ["schemaVersion"] = 1, ["goal"] = Goal, ["basis"] = Basis,
+        ["steps"] = new JsonArray(Steps.Select(step => (JsonNode)new JsonObject
+        {
+            ["id"] = step.Id, ["title"] = step.Title, ["acceptance"] = step.Acceptance,
+        }).ToArray()),
+    };
+
+    public void RestoreCheckpoint(JsonObject checkpoint)
+    {
+        if (checkpoint["schemaVersion"]?.GetValue<int>() != 1 ||
+            checkpoint["steps"] is not JsonArray { Count: <= 20 } steps)
+            throw new InvalidOperationException("保存的计划格式不受支持。");
+        if (Steps.Count > 0 || BasisConfirmed || operations.Count > 0)
+            throw new InvalidOperationException("不能用历史记录替换正在进行的计划。");
+        string goal = checkpoint["goal"]?.GetValue<string>() ?? "";
+        string basis = checkpoint["basis"]?.GetValue<string>() ?? "";
+        if (goal.Length > 4096 || basis.Length > 4096)
+            throw new InvalidOperationException("保存的计划或尺度说明过长。");
+        if (steps.Count > 0)
+        {
+            var restored = new JsonArray();
+            foreach (var step in steps)
+            {
+                if (step is not JsonObject row || row.Any(pair => pair.Key is not ("id" or "title" or "acceptance")) ||
+                    row.Any(pair => pair.Value is not JsonValue value || !value.TryGetValue<string>(out var field) || field.Length > 2048))
+                    throw new InvalidOperationException("保存的步骤无效。");
+                restored.Add(row.DeepClone());
+            }
+            UpdatePlan(new JsonObject { ["goal"] = goal, ["steps"] = restored });
+        }
+        Basis = basis;
     }
 
     public JsonObject Snapshot() => new()
@@ -197,6 +265,7 @@ public sealed class ProjectWorkflow
         ["basisConfirmed"] = BasisConfirmed,
         ["awaitingReview"] = AwaitingReview,
         ["accepted"] = Accepted,
+        ["planReview"] = planReview?.DeepClone(),
         ["unresolvedFailures"] = new JsonArray(failures.Select(id => (JsonNode)JsonValue.Create(id)!).ToArray()),
         ["steps"] = new JsonArray(Steps.Select(step => (JsonNode)new JsonObject
         {

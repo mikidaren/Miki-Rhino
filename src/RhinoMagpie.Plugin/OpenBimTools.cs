@@ -9,7 +9,7 @@ using RhinoMagpie.Agent;
 
 namespace RhinoMagpie.Plugin;
 
-public sealed class OpenBimTools(RhinoDoc document) : ILocalModelingTools
+public sealed partial class OpenBimTools(RhinoDoc document) : ILocalModelingTools, IPlanReviewTools
 {
     private readonly uint documentSerial = document.RuntimeSerialNumber;
 
@@ -21,16 +21,21 @@ public sealed class OpenBimTools(RhinoDoc document) : ILocalModelingTools
     {
         var tools = JsonNode.Parse("""
         [
-          {"name":"openbim_catalog","description":"Inspect the local reusable lightweight BIM toolkit or one project's parameters. Request only the needed topic. No materials or construction-junction specifications are required. All source lengths are metres.","inputSchema":{"type":"object","properties":{"topic":{"type":"string","enum":["tools","template","project","levels","grids","spaces","walls","slabs","types","openings","stairs"]}},"additionalProperties":false},"annotations":{"readOnlyHint":true}},
+          {"name":"openbim_catalog","description":"Inspect the local reusable lightweight BIM toolkit or one project's parameters. Request only the needed topic. No materials or construction-junction specifications are required. All source lengths are metres.","inputSchema":{"type":"object","properties":{"topic":{"type":"string","enum":["tools","template","project","layout","brief","levels","grids","spaces","walls","slabs","types","openings","stairs"]}},"additionalProperties":false},"annotations":{"readOnlyHint":true}},
           {"name":"openbim_apply","description":"Build exact native geometry or patch the current lightweight BIM project using the installed reusable toolkit. Supply exactly one of project, patch, or explicit template='two-storey'. Patches require expectedRevision from inspection. Shared type edits update matching Blocks and real host openings; floor edits affect dependent parts only. Do not use the demo template unless the user requests that example.","inputSchema":{"type":"object","properties":{"project":{"type":"object"},"patch":{"type":"object"},"template":{"type":"string","enum":["two-storey"]},"expectedRevision":{"type":"integer","minimum":0}},"additionalProperties":false},"annotations":{"readOnlyHint":false}},
           {"name":"openbim_inspect","description":"Read back and verify current native BIM geometry, exact solid volumes, through-openings, shared Blocks and source/geometry synchronization. Returns a compact summary; request ids only for specific part bounds. This is actual document readback, not a plan-status claim.","inputSchema":{"type":"object","properties":{"ids":{"type":"array","maxItems":32,"items":{"type":"string"}}},"additionalProperties":false},"annotations":{"readOnlyHint":true}},
+          {"name":"openbim_set_plan_brief","description":"Save an explicitly user-confirmed brief. Supply exactly one of profile (area bounds and circulation IDs for manually built projects) or layout (full revised brief for a solver-generated project; see catalog topic=layout). Does not edit geometry. Confirm only requirements the user supplied.","inputSchema":{"type":"object","properties":{"expectedRevision":{"type":"integer","minimum":0},"profile":{"type":"object","properties":{"transitSpaces":{"type":"array","items":{"type":"string"}},"areaTargetsM2":{"type":"object","additionalProperties":{"type":"object","properties":{"min":{"type":"number"},"max":{"type":"number"}},"additionalProperties":false}}},"required":["transitSpaces","areaTargetsM2"],"additionalProperties":false},"layout":{"type":"object"}},"required":["expectedRevision"],"additionalProperties":false}},
+          {"name":"openbim_plan_review","description":"Independently check current native BIM and the confirmed brief for area, same-level overlap, floor coverage and routes to stairs. A failed or stale report does not pass. Use matching expectedRevision.","inputSchema":{"type":"object","properties":{"expectedRevision":{"type":"integer","minimum":0}},"required":["expectedRevision"],"additionalProperties":false},"annotations":{"readOnlyHint":true}},
+          {"name":"openbim_layout_candidate","description":"Generate a dimensioned draft for an EMPTY document: two rectangular storeys, 1–5 rooms each, single shared corridor and fixed straight stair. Call openbim_catalog topic=layout for brief schema. Do not invent dimensions or area ranges. No geometry is changed.","inputSchema":{"type":"object","properties":{"brief":{"type":"object"}},"required":["brief"],"additionalProperties":false},"annotations":{"readOnlyHint":true}},
+          {"name":"openbim_apply_layout","description":"Ask for explicit user approval of one staged two-storey candidate, then build native geometry and save its brief. Pass its candidateId; do not reconstruct or send its geometry. Run openbim_plan_review afterward.","inputSchema":{"type":"object","properties":{"candidateId":{"type":"string"}},"required":["candidateId"],"additionalProperties":false}},
           {"name":"openbim_export_ifc","description":"Export the synchronized current BIM project to a user-requested absolute .ifc path, reopen with IfcOpenShell and verify semantics and actual geometry. Uses the bundled offline runtime; no external Python or setup is needed. Never overwrites an existing file. Export is not a modeling repair.","inputSchema":{"type":"object","properties":{"path":{"type":"string"}},"required":["path"],"additionalProperties":false},"annotations":{"readOnlyHint":false}}
         ]
         """)!.AsArray();
         if (!IfcRuntimeAvailable)
         {
-            var export = tools.First(item => item?["name"]?.GetValue<string>() == "openbim_export_ifc");
-            tools.Remove(export);
+            foreach (var tool in tools.Where(item => item?["name"]?.GetValue<string>() is "openbim_export_ifc" or
+                "openbim_plan_review" or "openbim_layout_candidate" or "openbim_apply_layout").ToArray())
+                tools.Remove(tool);
         }
         return tools;
     }
@@ -39,15 +44,22 @@ public sealed class OpenBimTools(RhinoDoc document) : ILocalModelingTools
     {
         try
         {
-            JsonObject result = name == "openbim_export_ifc"
-                ? await ExportAsync(arguments, token)
-                : await OnUiAsync(() => name switch
+            JsonObject result = name switch
+            {
+                "openbim_export_ifc" => await ExportAsync(arguments, token),
+                "openbim_plan_review" => await ReviewPlanAsync(arguments, token),
+                "openbim_layout_candidate" => await StageLayoutAsync(arguments, token),
+                "openbim_set_plan_brief" when arguments.ContainsKey("layout") => await ReviseLayoutBriefAsync(arguments, token),
+                _ => await OnUiAsync(() => name switch
                 {
                     "openbim_catalog" => Catalog(arguments),
                     "openbim_apply" => Apply(arguments),
                     "openbim_inspect" => Compact(RhinoModel.Inspect(Current()), arguments),
+                    "openbim_set_plan_brief" => SetPlanBrief(arguments),
+                    "openbim_apply_layout" => ApplyStagedLayout(arguments),
                     _ => throw new InvalidOperationException("未知的简易 BIM 工具。"),
-                }, token);
+                }, token),
+            };
             return Text(result.ToJsonString());
         }
         catch (Exception error) when (error is InvalidOperationException or ArgumentException or IOException or
@@ -73,6 +85,8 @@ public sealed class OpenBimTools(RhinoDoc document) : ILocalModelingTools
                 ["ifcRuntimeConfigured"] = IfcRuntimeAvailable,
                 ["ifcRuntime"] = IfcRuntimeAvailable ? "bundled-offline" : "unavailable",
             };
+        if (topic == "layout") return LayoutSchema();
+        if (topic == "brief") return CurrentPlanBrief();
         if (topic == "template")
             return new JsonObject { ["template"] = "two-storey", ["sizeM"] = "12 x 8", ["storeys"] = 2,
                 ["storeyHeightM"] = 3.2, ["wallThicknessM"] = .24,

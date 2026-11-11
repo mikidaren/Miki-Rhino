@@ -132,7 +132,11 @@ public sealed class MagpiePanel : Panel
                 status.Text = new UnconfirmedToolException().Message;
                 return;
             }
-            if (documentSerial != 0) chats[documentSerial] = new DocumentChat();
+            if (documentSerial != 0 && RhinoDoc.ActiveDoc is { } doc && doc.RuntimeSerialNumber == documentSerial)
+            {
+                chats[documentSerial] = new DocumentChat();
+                LoadPlanReview(chats[documentSerial], doc);
+            }
             transcript.Text = "";
             prompt.Text = "";
             PublishState();
@@ -234,7 +238,21 @@ public sealed class MagpiePanel : Panel
         }
         else
         {
-            if (!chats.ContainsKey(serial)) chats[serial] = new DocumentChat();
+            if (!chats.ContainsKey(serial))
+            {
+                var opened = new DocumentChat();
+                try
+                {
+                    if (new OpenBimTools(doc!).LoadWorkflowCheckpoint() is { } saved)
+                        opened.Session.Workflow.RestoreCheckpoint(saved);
+                }
+                catch (Exception error) when (error is JsonException or InvalidOperationException)
+                {
+                    opened.Messages.Add(new PanelMessage("system", "notice", "保存的计划无法恢复：" + FriendlyError(error)));
+                }
+                chats[serial] = opened;
+            }
+            LoadPlanReview(chats[serial], doc!);
             transcript.Text = chats[serial].Transcript.ToString();
             prompt.Text = chats[serial].Draft;
         }
@@ -360,9 +378,16 @@ public sealed class MagpiePanel : Panel
                     token.ThrowIfCancellationRequested();
                     if (RhinoDoc.ActiveDoc?.RuntimeSerialNumber != doc.RuntimeSerialNumber)
                         throw new OperationCanceledException(token);
-                    return call.Name == "confirm_design_basis"
-                        ? ConfirmDesignBasis(call.Arguments["note"]?.GetValue<string>() ?? "", token)
-                        : call.ReadOnly || autoTools.Checked == true || ConfirmTool(call, token);
+                    return call.Name switch
+                    {
+                        "confirm_design_basis" => ConfirmDesignBasis(call.Arguments["note"]?.GetValue<string>() ?? "", token),
+                        "openbim_set_plan_brief" => ConfirmTool(call, token),
+                        "openbim_apply_layout" => ConfirmTool(call with
+                        {
+                            Arguments = new OpenBimTools(doc).DescribeLayoutDraft(call.Arguments),
+                        }, token),
+                        _ => call.ReadOnly || autoTools.Checked == true || ConfirmTool(call, token),
+                    };
                 }, token),
                 (arguments, token) => OnUiAsync(() => AskUser(arguments, token), token),
                 (role, text) => Application.Instance.AsyncInvoke(() => { if (!disposed) Append(chat, role, text); }),
@@ -394,6 +419,11 @@ public sealed class MagpiePanel : Panel
         }
         finally
         {
+            if (!disposed && chat.Architectural && RhinoDoc.ActiveDoc?.RuntimeSerialNumber == doc.RuntimeSerialNumber)
+            {
+                try { new OpenBimTools(doc).SaveWorkflowCheckpoint(chat.Session.Workflow); }
+                catch (InvalidOperationException error) { Append(chat, "诊断", FriendlyError(error)); }
+            }
             if (undo != 0 && RhinoDoc.FromRuntimeSerialNumber(doc.RuntimeSerialNumber) is { } live)
                 RhinoApp.InvokeOnUiThread(new Action(() => live.EndUndoRecord(undo)));
             if (chat.StreamingMessage is { State: "running" } unfinished)
@@ -610,13 +640,17 @@ public sealed class MagpiePanel : Panel
 
     private bool ConfirmTool(ToolInvocation call, CancellationToken token)
     {
-        using var dialog = new Dialog<bool> { Title = "允许 Miki-Rhino 执行 Rhino 操作", ClientSize = new Size(620, 440), Resizable = true };
-        var allow = new Button { Text = "允许执行" };
+        bool brief = call.Name == "openbim_set_plan_brief";
+        bool layoutCandidate = call.Name == "openbim_apply_layout";
+        using var dialog = new Dialog<bool> { Title = brief ? "确认平面任务书" : layoutCandidate ? "确认两层平面候选" : "允许 Miki-Rhino 执行 Rhino 操作", ClientSize = new Size(620, 440), Resizable = true };
+        var allow = new Button { Text = brief ? "保存任务书" : layoutCandidate ? "按候选建模" : "允许执行" };
         var decline = new Button { Text = "拒绝" };
         allow.Click += (_, _) => dialog.Close(true);
         decline.Click += (_, _) => dialog.Close(false);
         var layout = new DynamicLayout { Padding = 12, Spacing = new Size(8, 8) };
-        layout.AddRow(new Label { Text = call.Name });
+        layout.AddRow(new Label { Text = brief ? "请核对哪些空间可作为通道，以及哪些面积是你要求的。面积单位为平方米。" :
+            layoutCandidate ? "请核对任务书、默认尺寸和候选方案。确认后在空白文档中建立原生几何。" : call.Name,
+            Wrap = WrapMode.Word });
         layout.Add(new TextArea { ReadOnly = true, Text = call.Arguments.ToJsonString(new JsonSerializerOptions { WriteIndented = true }) }, yscale: true);
         layout.AddSeparateRow(allow, decline);
         dialog.Content = layout;
@@ -772,6 +806,11 @@ public sealed class MagpiePanel : Panel
             documentName = string.IsNullOrWhiteSpace(active.Name) ? "未命名" : active.Name;
         }
         chats.TryGetValue(documentSerial, out var chat);
+        if (running is null && chat?.Session.Workflow.Snapshot()["planReview"] is JsonObject currentReview &&
+            currentReview["status"]?.GetValue<string>() is "passed" or "failed" &&
+            RhinoDoc.ActiveDoc is { } currentDoc && currentDoc.RuntimeSerialNumber == documentSerial &&
+            !OpenBimTools.HasLivePlanReport(currentDoc))
+            LoadPlanReview(chat, currentDoc);
         web.UpdateState(new
         {
             document = documentName,
@@ -796,7 +835,8 @@ public sealed class MagpiePanel : Panel
             catalogError,
             messages = chat?.Messages.TakeLast(120).Where(message =>
                 message.Type != "message" || message.State == "running" || message.Text.Length > 0).ToList() ?? [],
-            plan = chat is not null && (chat.Session.Workflow.Steps.Count > 0 || chat.Session.Workflow.Basis.Length > 0)
+            plan = chat is not null && (chat.Session.Workflow.Steps.Count > 0 || chat.Session.Workflow.Basis.Length > 0 ||
+                chat.Session.Workflow.RequiresPlanReview)
                 ? chat.Session.Workflow.Snapshot() : null,
             references = chat?.References.Select(reference => new
             {
@@ -838,6 +878,10 @@ public sealed class MagpiePanel : Panel
             case "exportIfc":
                 if (sourceDocument != documentSerial.ToString(System.Globalization.CultureInfo.InvariantCulture)) return;
                 await ExportIfcAsync();
+                break;
+            case "checkPlan":
+                if (sourceDocument != documentSerial.ToString(System.Globalization.CultureInfo.InvariantCulture)) return;
+                await CheckPlanAsync(chat);
                 break;
             case "catalog":
                 if (catalogError.Length > 0 || DateTime.UtcNow - catalogRefreshedAt > TimeSpan.FromSeconds(30))
@@ -884,8 +928,15 @@ public sealed class MagpiePanel : Panel
                 break;
             case "accept":
                 if (chat is null || running is not null) return;
-                chat.Session.Workflow.Accept();
-                status.Text = "当前成果已由你验收";
+                if (sourceDocument != documentSerial.ToString(System.Globalization.CultureInfo.InvariantCulture) ||
+                    RhinoDoc.ActiveDoc is not { } active || active.RuntimeSerialNumber != documentSerial) return;
+                try
+                {
+                    chat.Session.Workflow.SetPlanReview(new OpenBimTools(active).ReadPlanReview(verifyNative: true));
+                    chat.Session.Workflow.Accept();
+                    status.Text = "当前成果已由你验收";
+                }
+                catch (InvalidOperationException error) { status.Text = FriendlyError(error); }
                 break;
             case "attach":
                 if (running is null && refreshing is null) AttachReference();
@@ -901,6 +952,55 @@ public sealed class MagpiePanel : Panel
                 break;
         }
         PublishState();
+    }
+
+    private static void LoadPlanReview(DocumentChat chat, RhinoDoc doc)
+    {
+        try { chat.Session.Workflow.SetPlanReview(new OpenBimTools(doc).ReadPlanReview(verifyNative: true)); }
+        catch (InvalidOperationException)
+        {
+            chat.Session.Workflow.SetPlanReview(new JsonObject { ["status"] = "stale" });
+        }
+    }
+
+    private async Task CheckPlanAsync(DocumentChat? chat)
+    {
+        if (chat is null || running is not null || refreshing is not null ||
+            RhinoDoc.ActiveDoc is not { } doc || doc.RuntimeSerialNumber != documentSerial) return;
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token);
+        running = cancellation;
+        SetBusy(true);
+        var tools = new OpenBimTools(doc);
+        try
+        {
+            var current = tools.ReadPlanReview(verifyNative: false);
+            chat.Session.Workflow.SetPlanReview(current);
+            if (current is null)
+                throw new InvalidOperationException("当前文档尚无可检查的建筑平面。");
+            if (current["status"]?.GetValue<string>() == "unavailable")
+                throw new InvalidOperationException("当前安装包没有离线平面检查运行时。");
+            if (current["briefConfirmed"]?.GetValue<bool>() != true)
+                throw new InvalidOperationException("请先在对话里提供面积要求和允许通行的空间，并确认平面任务书。");
+            status.Text = "正在检查当前版本的平面";
+            PublishState();
+            var result = await tools.CallToolAsync("openbim_plan_review",
+                new JsonObject { ["expectedRevision"] = current["revision"]!.DeepClone() }, cancellation.Token);
+            cancellation.Token.ThrowIfCancellationRequested();
+            var checkedState = tools.ReadPlanReview(verifyNative: true);
+            chat.Session.Workflow.SetPlanReview(checkedState);
+            if (result["isError"]?.GetValue<bool>() == true)
+                throw new InvalidOperationException(result["content"]?[0]?["text"]?.GetValue<string>() ?? "平面检查无法完成。");
+            chat.Session.Workflow.ObserveTool("openbim_plan_review", true, true);
+            status.Text = checkedState?["status"]?.GetValue<string>() == "passed" ? "本版平面检查通过" : "平面有待修改项";
+        }
+        catch (OperationCanceledException) { if (!disposed) status.Text = "平面检查已停止"; }
+        catch (InvalidOperationException error) { if (!disposed) status.Text = FriendlyError(error); }
+        finally
+        {
+            running = null;
+            if (!disposed) SetBusy(false);
+            DisposeTransportsWhenIdle();
+        }
     }
 
     private void AttachReference()
